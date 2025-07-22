@@ -13,19 +13,20 @@ public class Usuario {
     private Integer id;
 
     @Column(nullable = false, length = 50)
+    private String userName;
+
+    @Column(nullable = false, length = 50)
     private String nombre;
 
     @Column(nullable = false, length = 50)
-    private String apellido1;
-
-    @Column(length = 50)
-    private String apellido2;
+    private String apellido;
 
     private Integer edad;
 
     @Column(nullable = false, length = 100)
     private String email;
 
-    @Column(length = 20)
-    private String tlf;
+    @Column(nullable = false)
+    private String password;
+
 }
