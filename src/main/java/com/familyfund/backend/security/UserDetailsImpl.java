@@ -26,20 +26,23 @@ public class UserDetailsImpl implements UserDetails {
 
   private String email;
 
+  private String nombre;
+
   @JsonIgnore
   private String password;
 
   private Collection<? extends GrantedAuthority> authorities;
 
-  public static UserDetailsImpl build(Usuario user) {
+public static UserDetailsImpl build(Usuario user) {
     List<GrantedAuthority> authorities = new ArrayList<>();
     authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRol().name()));
     return new UserDetailsImpl(
         user.getId(),
         user.getEmail(),
+        user.getNombre(),    
         user.getPassword(),
         authorities);
-  }
+}
 
   public Integer getUserId() {
     return id;

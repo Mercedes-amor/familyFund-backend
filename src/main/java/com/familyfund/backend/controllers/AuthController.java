@@ -1,6 +1,5 @@
 package com.familyfund.backend.controllers;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,70 +23,77 @@ import com.familyfund.backend.security.JwtUtils;
 import com.familyfund.backend.security.UserDetailsImpl;
 import com.familyfund.backend.dto.JwtResponseDto;
 
-
 import jakarta.validation.Valid;
-
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-  @Autowired
-  AuthenticationManager authenticationManager;
+    @Autowired
+    AuthenticationManager authenticationManager;
 
-  @Autowired
-  UsuarioRepository usuarioRepository;
+    @Autowired
+    UsuarioRepository usuarioRepository;
 
-  @Autowired
-  PasswordEncoder encoder;
+    @Autowired
+    PasswordEncoder encoder;
 
-  @Autowired
-  JwtUtils jwtUtils;
+    @Autowired
+    JwtUtils jwtUtils;
 
-  @PostMapping("/signin")
-  public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginDto loginDto) {
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginDto loginDto) {
 
-    Authentication authentication = authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
 
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    String jwt = jwtUtils.generateJwtToken(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
 
-    UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-    String rol = userDetails.getAuthorities().stream().findFirst().map(a -> a.getAuthority()).orElse("ERROR");
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String rol = userDetails.getAuthorities().stream().findFirst().map(a -> a.getAuthority()).orElse("ERROR");
 
-    return ResponseEntity.<JwtResponseDto>ok(new JwtResponseDto(jwt, "Bearer",
-    userDetails.getId(),
-    userDetails.getUsername(), // si esto es el nombre
-    userDetails.getEmail(),    // email real (debes tener este getter en UserDetailsImpl)
-    rol));
-  }
-
-  @PostMapping("/signup")
-  public ResponseEntity<?> registerUser(@Valid @RequestBody SignupDto signUpRequest) {
-    if (usuarioRepository.existsByNombre(signUpRequest.getNombre())) {
-      return ResponseEntity
-          .badRequest()
-          .body(new MessageResponse("Error: Ya existe un usuario con ese nombre"));
+        return ResponseEntity.<JwtResponseDto>ok(new JwtResponseDto(jwt, "Bearer",
+                userDetails.getId(),
+                userDetails.getNombre(), // si esto es el nombre
+                userDetails.getEmail(), // email real (debes tener este getter en UserDetailsImpl)
+                rol));
     }
 
-    if (usuarioRepository.existsByEmail(signUpRequest.getEmail())) {
-      return ResponseEntity
-          .badRequest()
-          .body(new MessageResponse("Error: Ya existe un usuario con ese email"));
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupDto signUpRequest) {
+        if (usuarioRepository.existsByNombre(signUpRequest.getNombre())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Ya existe un usuario con ese nombre"));
+        }
+
+        if (usuarioRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Ya existe un usuario con ese email"));
+        }
+
+        Rol rolUsuario;
+        try {
+            rolUsuario = (signUpRequest.getRol() != null)
+                    ? Rol.valueOf(signUpRequest.getRol())
+                    : Rol.USER;
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Rol inválido"));
+        }
+
+        Usuario user = new Usuario(
+                null,
+                signUpRequest.getNombre(),
+                signUpRequest.getApellido(),
+                signUpRequest.getEdad(),
+                signUpRequest.getEmail(),
+                encoder.encode(signUpRequest.getPassword()),
+                rolUsuario);
+
+        usuarioRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente"));
     }
 
-    // Create new user's account
-    Usuario user = new Usuario(
-    null,
-    signUpRequest.getNombre(),
-    signUpRequest.getApellido(),
-    signUpRequest.getEdad(),
-    signUpRequest.getEmail(),
-    encoder.encode(signUpRequest.getPassword()),
-    Rol.valueOf(signUpRequest.getRol())
-);
-    usuarioRepository.save(user);
-    return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente"));
-  }
 }
