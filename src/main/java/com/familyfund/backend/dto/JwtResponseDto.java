@@ -9,7 +9,7 @@ import lombok.Data;
 public class JwtResponseDto {
   private String accessToken;
   private String tokenType;     // "Bearer"
-  private Integer id;
+  private Long id;
   private String nombre;
   private String email;
   private String rol;

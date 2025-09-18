@@ -1,0 +1,44 @@
+package com.familyfund.backend.modelo;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.*;
+
+import java.util.List;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "users") // porque "user" es reservado en SQL
+public class UserNulo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "Username cannot be empty")
+    private String username;
+
+    @Email(message = "Invalid email")
+    @NotBlank(message = "Email cannot be empty")
+    private String email;
+
+    @NotBlank(message = "Password cannot be empty")
+    @Size(min = 6, message = "Password must have at least 6 characters")
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
+
+    @ManyToOne
+    @JoinColumn(name = "family_id", nullable = false)
+    private Family family;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions;
+}
+

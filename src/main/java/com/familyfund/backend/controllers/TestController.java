@@ -36,7 +36,7 @@ public class TestController {
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<UsuarioDto> getUser(@PathVariable Integer id) {
+    public ResponseEntity<UsuarioDto> getUser(@PathVariable Long id) {
         Optional<Usuario> user = usuarioRepository.findById(id);
         if (user.isEmpty()) {
             return ResponseEntity.notFound().build();

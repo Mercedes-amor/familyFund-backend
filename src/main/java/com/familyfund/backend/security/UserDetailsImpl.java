@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(of = "id")
 
 public class UserDetailsImpl implements UserDetails {
-  private Integer id;
+  private Long id;
 
   private String email;
 
@@ -44,7 +44,7 @@ public static UserDetailsImpl build(Usuario user) {
         authorities);
 }
 
-  public Integer getUserId() {
+  public Long getUserId() {
     return id;
   }
 

@@ -32,7 +32,7 @@ public class SignupDto {
     @Size(min = 3, max = 40)
     private String password;
 
-    private String rol;
+        private String rol;
 
 
 

@@ -1,5 +1,7 @@
 package com.familyfund.backend.modelo;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +19,7 @@ public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     // @Column(nullable = false, length = 50)
     // private String userName;
@@ -37,9 +39,14 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING) // Nos aseguramos de indicar a JPA que el enum persiste como String, en la base
-                                 // de datos se guarda como Varchar
+    @Enumerated(EnumType.STRING) // Nos aseguramos de indicar a JPA que el enum persiste como String,
+                                 // en la base de datos se guarda como Varchar
     @Column(nullable = false)
     private Rol rol;
+
+    @ManyToOne
+    @JoinColumn(name = "family_id")
+    @JsonBackReference
+    private Family family;
 
 }

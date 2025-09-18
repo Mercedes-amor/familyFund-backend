@@ -77,22 +77,22 @@ public class AuthController {
         Rol rolUsuario;
         try {
             rolUsuario = (signUpRequest.getRol() != null)
-                    ? Rol.valueOf(signUpRequest.getRol())
+                    ? Rol.valueOf(signUpRequest.getRol().toUpperCase())
                     : Rol.USER;
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Rol inválido"));
         }
 
-        Usuario user = new Usuario(
-                null,
-                signUpRequest.getNombre(),
-                signUpRequest.getApellido(),
-                signUpRequest.getEdad(),
-                signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()),
-                rolUsuario);
-
+        Usuario user = new Usuario();
+        user.setNombre(signUpRequest.getNombre());
+        user.setApellido(signUpRequest.getApellido());
+        user.setEdad(signUpRequest.getEdad());
+        user.setEmail(signUpRequest.getEmail());
+        user.setPassword(encoder.encode(signUpRequest.getPassword()));
+        user.setRol(rolUsuario);
+        user.setFamily(null); // explícito, si no pertenece a ninguna familia aún
         usuarioRepository.save(user);
+
         return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente"));
     }
 
