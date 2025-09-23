@@ -46,7 +46,7 @@ public class Usuario {
 
     @ManyToOne
     @JoinColumn(name = "family_id")
-    @JsonBackReference
+    @JsonBackReference // <- Evita recursión infinta, no serializa hacia atrás
     private Family family;
 
 }

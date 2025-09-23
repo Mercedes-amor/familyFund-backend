@@ -1,5 +1,7 @@
 package com.familyfund.backend.controllers;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -7,25 +9,28 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.familyfund.backend.dto.JwtResponseDto;
 import com.familyfund.backend.dto.LoginDto;
 import com.familyfund.backend.dto.MessageResponse;
 import com.familyfund.backend.dto.SignupDto;
+import com.familyfund.backend.dto.UsuarioDto;
 import com.familyfund.backend.modelo.Rol;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.UsuarioRepository;
 import com.familyfund.backend.security.JwtUtils;
 import com.familyfund.backend.security.UserDetailsImpl;
-import com.familyfund.backend.dto.JwtResponseDto;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+//Para manejar CORS
+// @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -41,6 +46,7 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    //LOGING
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginDto loginDto) {
 
@@ -55,11 +61,13 @@ public class AuthController {
 
         return ResponseEntity.<JwtResponseDto>ok(new JwtResponseDto(jwt, "Bearer",
                 userDetails.getId(),
-                userDetails.getNombre(), // si esto es el nombre
-                userDetails.getEmail(), // email real (debes tener este getter en UserDetailsImpl)
+                userDetails.getNombre(), 
+                userDetails.getEmail(), 
+                userDetails.getFamily(),    
                 rol));
     }
 
+    //REGISTRO
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupDto signUpRequest) {
         if (usuarioRepository.existsByNombre(signUpRequest.getNombre())) {
@@ -96,4 +104,15 @@ public class AuthController {
         return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente"));
     }
 
+    //OBTENER DATOS DE UN USUARIO
+        @GetMapping("/user/{id}")
+    public ResponseEntity<UsuarioDto> getUser(@PathVariable Long id) {
+        Optional<Usuario> user = usuarioRepository.findById(id);
+        if (user.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Usuario u = user.get();
+        return ResponseEntity.ok(new UsuarioDto(u.getId(), u.getNombre(), u.getEmail(), u.getFamily()));
+    }
 }

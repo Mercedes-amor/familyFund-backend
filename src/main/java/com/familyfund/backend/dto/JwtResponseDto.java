@@ -1,5 +1,7 @@
 package com.familyfund.backend.dto;
 
+import com.familyfund.backend.modelo.Family;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,6 +14,7 @@ public class JwtResponseDto {
   private Long id;
   private String nombre;
   private String email;
+  private Family family;
   private String rol;
 }
 

@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Usuario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -28,6 +29,8 @@ public class UserDetailsImpl implements UserDetails {
 
   private String nombre;
 
+  private Family family;
+
   @JsonIgnore
   private String password;
 
@@ -40,6 +43,7 @@ public static UserDetailsImpl build(Usuario user) {
         user.getId(),
         user.getEmail(),
         user.getNombre(),    
+        user.getFamily(),
         user.getPassword(),
         authorities);
 }

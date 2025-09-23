@@ -1,10 +1,12 @@
 package com.familyfund.backend.repositories;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.familyfund.backend.modelo.Usuario;
-import java.util.Optional;
 
 
 @Repository
@@ -21,5 +23,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Boolean existsByNombre(String nombre);
 
     Boolean existsByEmail(String email);
+
+    List<Usuario> findByFamilyId(Long familyId);
 
 }

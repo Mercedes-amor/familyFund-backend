@@ -28,7 +28,7 @@ public class Transaction {
     @NotNull(message = "Date cannot be null")
     private LocalDate date;
 
-    @NotNull(message = "Month cannot be null")
+    //Se genera automáticamente a partir de date
     private Integer month;
 
     @NotNull(message = "Amount cannot be null")
@@ -42,6 +42,12 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @PrePersist //Debe calcularse antes de guardar nueva Transaction
+    @PreUpdate  //Debe calcularse antes dde guardar un update de Transaction
+    private void calculateMonth() {
+        if (this.date != null) {
+            this.month = this.date.getMonthValue(); // Valores 1-12
+        }
+    }
 }
-
-
