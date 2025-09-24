@@ -60,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
     // OBTENER LISTADO POR FAMILIA ID
     @Override
     public List<Category> findByFamilyId(Long familyId) {
-        return categoryRepository.findByFamilyId(familyId);
+        return categoryRepository.findByFamily_Id(familyId);
     }
 
     // BORRAR POR ID

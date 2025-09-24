@@ -42,6 +42,11 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario findByEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
+
+    // Método que devuelve todos los usuarios de una familia
+    public List<Usuario> findByFamilyId(Long familyId) {
+        return usuarioRepository.findByFamily_Id(familyId);
+    }
     
     //Borrar por id
     @Override

@@ -48,31 +48,31 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            // Prueba acceso a todo
-            // .requestMatchers("/**").permitAll()
-
-            // Rutas para todos los usuarios, incluidos los no registrados
-            .requestMatchers("/api/**").permitAll()
+            // Endpoints públicos
+            .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/error").permitAll()
 
- 
-            // Admin acceso a toda la API
-            // .requestMatchers("/**").hasRole("ADMIN")
+            // Endpoints que requieren autenticación (De momento solo authenticated)
+            .requestMatchers("/api/transactions/**").authenticated()
+            .requestMatchers("/api/categories/**").authenticated()
+            .requestMatchers("/api/families/**").authenticated() 
+
+            // Solo ADMIN
             .anyRequest().hasRole("ADMIN")
-
-            ); 
-
+        );
 
     http.authenticationProvider(authenticationProvider());
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     http.cors(Customizer.withDefaults());
     return http.build();
-  }
+}
+
+
 }
 

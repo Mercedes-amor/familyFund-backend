@@ -24,6 +24,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Boolean existsByEmail(String email);
 
-    List<Usuario> findByFamilyId(Long familyId);
+    // Devuelve todos los usuarios asociados a una familia
+    List<Usuario> findByFamily_Id(Long familyId);
+
 
 }

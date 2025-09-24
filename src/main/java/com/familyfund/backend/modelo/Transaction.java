@@ -10,6 +10,8 @@ import java.time.LocalDate;
 
 @Entity
 @Data
+//Renombramos la tabla ya que Transaction es una palabra reservada en SQL Server y nos daba error en las consultas
+@Table(name = "user_transaction") 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

@@ -10,4 +10,5 @@ public interface UsuarioService {
     Usuario findById(Long id);             // Buscar por ID
     void deleteById(Long id);              // Eliminar por ID
     Usuario findByEmail(String email);     // Buscar por email (opcional)
+    List<Usuario> findByFamilyId(Long familyId);
 }
