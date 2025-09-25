@@ -32,4 +32,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
                         """)
         List<Transaction> findByFamily(@Param("familyId") Long familyId);
 
+        //Obtener transacciones de una categoría
+        List<Transaction> findByCategoryId(Long categoryId);
+
 }

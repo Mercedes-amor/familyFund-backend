@@ -8,6 +8,7 @@ import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.modelo.Family;
 
 public interface FamilyService {
+    Family createFamily(String name, Long userId); //Crear familia
     FamilyResponse getFamilyById(Long familyId); //Obtener dto Family
     Family save(Family family);         // Crear o actualizar
     List<Family> findAll();             // Listar todas las familias 

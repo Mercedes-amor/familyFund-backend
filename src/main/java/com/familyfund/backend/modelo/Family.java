@@ -30,7 +30,6 @@ public class Family {
     @NotBlank(message = "Family name cannot be empty")
     private String name;
 
-    @NotBlank(message = "Code cannot be empty")
     private String code; // para invitar usuarios a unirse a la familia
 
     @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, orphanRemoval = true)

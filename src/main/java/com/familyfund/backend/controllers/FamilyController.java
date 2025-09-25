@@ -7,17 +7,28 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.familyfund.backend.dto.CategoryResponse;
+import com.familyfund.backend.dto.CreateFamilyRequest;
 import com.familyfund.backend.dto.FamilyResponse;
-import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.dto.JoinFamilyRequest;
+import com.familyfund.backend.dto.MemberResponse;
+import com.familyfund.backend.dto.TransactionResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
+import com.familyfund.backend.modelo.Transaction;
 import com.familyfund.backend.modelo.Usuario;
+import com.familyfund.backend.security.UserDetailsImpl;
 import com.familyfund.backend.services.CategoryService;
 import com.familyfund.backend.services.FamilyService;
+import com.familyfund.backend.services.TransactionService;
 import com.familyfund.backend.services.UsuarioService;
 
 @RestController
@@ -33,26 +44,17 @@ public class FamilyController {
     @Autowired
     CategoryService categoryService;
 
+    @Autowired
+    TransactionService transactionService;
+
     // *CREAR FAMILIA*
     @PostMapping("/newfamily")
-    public ResponseEntity<?> createFamily(@RequestBody Family family, @RequestParam Long userId) {
-        if (family.getName() == null || family.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "El nombre es obligatorio"));
-        }
+    public ResponseEntity<FamilyResponse> createFamily(@RequestBody CreateFamilyRequest request,
+            Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Family createdFamily = familyService.createFamily(request.getName(), userDetails.getId());
 
-        Usuario usuario = usuarioService.findById(userId);
-        if (usuario == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Usuario no encontrado"));
-        }
-
-        family.setUsuarios(List.of(usuario));
-        usuario.setFamily(family);
-
-        familyService.save(family);
-        usuarioService.save(usuario);
-
-        // Devolvemos DTO plano
-        return ResponseEntity.ok(new FamilyResponse(family.getId(), family.getName(), List.of()));
+        return ResponseEntity.ok(new FamilyResponse(createdFamily.getId(), createdFamily.getName(), List.of()));
     }
 
     // AÑADIR USUARIO A UNA FAMILIA
@@ -75,14 +77,14 @@ public class FamilyController {
     @GetMapping("/{id}")
     public ResponseEntity<FamilyResponse> getFamilyById(@PathVariable Long id) {
         Optional<Family> familyOpt = familyService.findOptionalById(id);
-        if (familyOpt.isEmpty()) return ResponseEntity.notFound().build();
+        if (familyOpt.isEmpty())
+            return ResponseEntity.notFound().build();
 
         Family family = familyOpt.get();
         // Transformar categorías a DTO
-        List<CategoryResponse> categories = family.getCategories() != null ?
-                family.getCategories().stream()
-                    .map(c -> new CategoryResponse(c.getId(), c.getName()))
-                    .collect(Collectors.toList())
+        List<CategoryResponse> categories = family.getCategories() != null ? family.getCategories().stream()
+                .map(c -> new CategoryResponse(c.getId(), c.getName()))
+                .collect(Collectors.toList())
                 : List.of();
 
         FamilyResponse response = new FamilyResponse(family.getId(), family.getName(), categories);
@@ -105,6 +107,18 @@ public class FamilyController {
         List<Category> categories = categoryService.findByFamilyId(id);
         List<CategoryResponse> res = categories.stream()
                 .map(c -> new CategoryResponse(c.getId(), c.getName()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(res);
+    }
+
+    // OBTENER LAS TRANSACCIONES DE UNA FAMILIA
+    @GetMapping("/{id}/transactions")
+    public ResponseEntity<List<TransactionResponse>> findByFamily(@PathVariable Long id) {
+        List<Transaction> transactions = transactionService.findByFamilyId(id);
+
+        List<TransactionResponse> res = transactions.stream()
+                .map(c -> new TransactionResponse(c.getId(), c.getName(), c.getType(), c.getDate(), c.getAmount(),
+                        c.getCategory().getId()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(res);
     }

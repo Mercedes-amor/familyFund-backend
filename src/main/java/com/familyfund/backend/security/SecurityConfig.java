@@ -64,7 +64,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/families/**").authenticated() 
 
             // Solo ADMIN
-            .anyRequest().hasRole("ADMIN")
+            .anyRequest().hasRole("USER") //CAMBIAR POR ADMIN
         );
 
     http.authenticationProvider(authenticationProvider());
