@@ -30,13 +30,14 @@ public class SecurityConfig {
     return new AuthTokenFilter();
   }
 
-  @Bean
-  public DaoAuthenticationProvider authenticationProvider() {
-    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-    authProvider.setUserDetailsService(userDetailsService);
-    authProvider.setPasswordEncoder(passwordEncoder());
+@Bean
+public DaoAuthenticationProvider authenticationProvider() {
+    // Pasamos UserDetailsService al constructor
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+    authProvider.setPasswordEncoder(passwordEncoder()); // sigue usando el encoder
     return authProvider;
-  }
+}
+
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
