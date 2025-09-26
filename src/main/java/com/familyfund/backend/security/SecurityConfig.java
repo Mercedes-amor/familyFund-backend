@@ -58,6 +58,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             // Endpoints públicos
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/error").permitAll()
+            .requestMatchers("/api/ping").permitAll()
+
 
             // Endpoints que requieren autenticación (De momento solo authenticated)
             .requestMatchers("/api/transactions/**").authenticated()

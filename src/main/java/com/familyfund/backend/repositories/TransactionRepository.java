@@ -34,5 +34,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
         //Obtener transacciones de una categoría
         List<Transaction> findByCategoryId(Long categoryId);
+    
+        //Borrar todas las transacciones al borrar su categoría
+        void deleteAllByCategoryId(Long categoryId);
 
 }

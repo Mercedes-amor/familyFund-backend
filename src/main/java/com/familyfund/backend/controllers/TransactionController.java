@@ -7,8 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,35 +72,38 @@ public class TransactionController {
         }
     }
 
-    // public ResponseEntity<Transaction> createTransaction(
-    // @PathVariable Long categoryId,
-    // @RequestBody TransactionRequest request) {
-
-    // try {
-    // //El usuario se obtiene en el servicio por AuthenticationMannager
-    // Transaction transaction = transactionService.createTransaction(categoryId,
-    // request);
-    // return ResponseEntity.ok(transaction);
-    // } catch (RuntimeException e) {
-    // // Puedes personalizar la respuesta si quieres
-    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-    // }
-    // }
-
     // EDITAR TRANSACCIÓN
+    @PutMapping("/{transactionId}")
+    public ResponseEntity<?> updateTransaction(
+            @PathVariable Long transactionId,
+            @RequestBody TransactionRequest request) {
+        System.out.println("PUT /" + transactionId + " recibido. Request: " + request);
 
-    // BORRAR TRANSACCIÓN
+        try {
+            TransactionResponse updated = transactionService.updateTransaction(transactionId, request);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno del servidor", "details", e.getMessage()));
+        }
+    }
 
-    // OBTENER LAS TRANSACCIONES DEL MES ACTUAL
-    // @GetMapping("/{familyId}/transactions")
-    // public ResponseEntity<?> getTransactionsByFamilyAndMonth(
-    // @PathVariable Long familyId,
-    // @RequestParam int year,
-    // @RequestParam int month) {
+    // ELIMINAR TRANSACCIÓN
+    @DeleteMapping("/{transactionId}")
+    public ResponseEntity<?> deleteTransaction(@PathVariable Long transactionId) {
+        System.out.println("DELETE /" + transactionId + " recibido");
 
-    // List<Transaction> transactions =
-    // transactionService.findByFamilyAndMonth(familyId, year, month);
-    // return ResponseEntity.ok(transactions);
-    // }
+        try {
+            transactionService.deleteTransaction(transactionId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno del servidor", "details", e.getMessage()));
+        }
+    }
 
 }

@@ -8,8 +8,14 @@ import com.familyfund.backend.modelo.Transaction;
 
 public interface TransactionService {
     Transaction save(Transaction transaction);
-    TransactionResponse createTransaction(Long categoryId, TransactionRequest request);
-    List<Transaction> findByFamilyId(Long familyId);
-    List<Transaction> findByCategoryId(Long categoryId);
-}
 
+    TransactionResponse createTransaction(Long categoryId, TransactionRequest request);
+
+    List<Transaction> findByFamilyId(Long familyId);
+
+    List<Transaction> findByCategoryId(Long categoryId);
+
+    TransactionResponse updateTransaction(Long transactionId, TransactionRequest request);
+
+    void deleteTransaction(Long transactionId);
+}

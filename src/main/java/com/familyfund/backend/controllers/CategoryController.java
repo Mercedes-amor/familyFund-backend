@@ -1,6 +1,7 @@
 package com.familyfund.backend.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.familyfund.backend.dto.CategoryRequest;
+import com.familyfund.backend.dto.CategoryResponse;
 import com.familyfund.backend.dto.TransactionResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Transaction;
+import com.familyfund.backend.repositories.CategoryRepository;
+import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.services.CategoryService;
 import com.familyfund.backend.services.FamilyService;
 import com.familyfund.backend.services.TransactionService;
@@ -33,6 +37,12 @@ public class CategoryController {
     CategoryService categoryService;
     @Autowired
     TransactionService transactionService;
+
+    @Autowired
+    CategoryRepository categoryRepository;
+
+    @Autowired
+    TransactionRepository transactionRepository;
 
     // NUEVA CATEGORÍA DE UNA FAMILIA
     @PostMapping("/newCategory/{familyId}")
@@ -59,40 +69,48 @@ public class CategoryController {
     }
 
     // OBTENER LAS TRANSACCIONES DE UNA CATEGORÍA
-    @GetMapping("/categories/{id}/transactions")
+    @GetMapping("/{id}/transactions")
     public ResponseEntity<List<TransactionResponse>> getTransactionsByCategory(@PathVariable Long id) {
         List<Transaction> transactions = transactionService.findByCategoryId(id);
         List<TransactionResponse> response = transactions.stream()
-                .map(tx -> new TransactionResponse(tx.getId(), tx.getName(), tx.getType(), tx.getDate(), tx.getAmount(), tx.getCategory().getId()))
+                .map(tx -> new TransactionResponse(tx.getId(), tx.getName(), tx.getType(), tx.getDate(), tx.getAmount(),
+                        tx.getCategory().getId()))
                 .toList();
         return ResponseEntity.ok(response);
     }
 
     // EDITAR CATEGORÍA
     @PutMapping("edit/{id}")
-    public ResponseEntity<?> updateCategory(
-            @PathVariable Long id,
-            @RequestBody Category categoryDetails) {
-
-        Category category = categoryService.findById(id);
-        if (category == null) {
-            return ResponseEntity.badRequest().body("Categoría no encontrada");
+    public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        String newName = body.get("name");
+        if (newName == null || newName.isBlank()) {
+            return ResponseEntity.badRequest().build();
         }
 
-        category.setName(categoryDetails.getName());
-        Category updated = categoryService.save(category);
-        return ResponseEntity.ok(updated);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        category.setName(newName);
+        Category saved = categoryRepository.save(category);
+
+        return ResponseEntity.ok(new CategoryResponse(saved.getId(), saved.getName()));
     }
 
-    // BORRAR CATEGORÍA
+    
+
+    // BORRAR CATEGORÍA Y TODAS LAS TRANSACCIONES
+    // DELETE /api/categories/{id}
     @DeleteMapping("delete/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
-        Category category = categoryService.findById(id);
-        if (category == null) {
-            return ResponseEntity.badRequest().body("Categoría no encontrada");
-        }
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        categoryService.deleteById(id);
-        return ResponseEntity.ok("Categoría eliminada correctamente");
+        // Primero borramos todas las transacciones asociadas
+        transactionRepository.deleteAllByCategoryId(category.getId());
+
+        // Ahora borramos la categoría del repositorio
+        categoryRepository.delete(category);
+
+        return ResponseEntity.ok(Map.of("message", "Categoría borrada correctamente"));
     }
 }
