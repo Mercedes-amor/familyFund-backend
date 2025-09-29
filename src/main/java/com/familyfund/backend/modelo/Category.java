@@ -2,6 +2,8 @@ package com.familyfund.backend.modelo;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.util.List;
@@ -20,6 +22,10 @@ public class Category {
     @NotBlank(message = "Category name cannot be empty")
     private String name;
 
+    @NotNull(message = "Amount cannot be null")
+    @Positive(message = "Amount must be positive")
+    private Double limit;
+    
     @ManyToOne
     @JoinColumn(name = "family_id")
     private Family family;

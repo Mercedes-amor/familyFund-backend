@@ -59,6 +59,8 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/api/ping").permitAll()
+            .requestMatchers("/api/usuarios").permitAll() 
+
 
 
             // Endpoints que requieren autenticación (De momento solo authenticated)

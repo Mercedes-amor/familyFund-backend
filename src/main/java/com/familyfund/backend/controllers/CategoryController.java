@@ -82,21 +82,48 @@ public class CategoryController {
     // EDITAR CATEGORÍA
     @PutMapping("edit/{id}")
     public ResponseEntity<CategoryResponse> updateCategory(@PathVariable Long id,
-            @RequestBody Map<String, String> body) {
-        String newName = body.get("name");
+            @RequestBody Map<String, Object> body) {
+        // Extraemos el nuevo nombre de la categoría del body
+        String newName = (String) body.get("name");
+
+        // Extraemos el nuevo límite (puede no venir, de ahí Object)
+        Object limitObj = body.get("limit");
+
+        // Validamos que el nombre exista y no esté en blanco
         if (newName == null || newName.isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null); // 400 Bad Request
         }
 
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+        Double newLimit = null;
+        if (limitObj != null) { // Si nos envían un límite, lo convertimos a Double
+            try {
+                newLimit = Double.parseDouble(limitObj.toString());
+
+                // Validamos que el límite sea positivo
+                if (newLimit < 0)
+                    return ResponseEntity.badRequest().body(null);
+            } catch (NumberFormatException e) {
+                // Si no se puede convertir a número, devolvemos 400
+                return ResponseEntity.badRequest().body(null);
+            }
+        }
+
+        // Buscamos la categoría en base a su id
+        Category category = categoryService.findById(id);
+        if (category == null) {
+            return ResponseEntity.notFound().build(); // 404 si no existe
+        }
+
+        // Actualizamos los campos de la categoría
         category.setName(newName);
-        Category saved = categoryRepository.save(category);
+        category.setLimit(newLimit);
 
-        return ResponseEntity.ok(new CategoryResponse(saved.getId(), saved.getName()));
+        // Guardamos la categoría actualizada
+        Category saved = categoryService.save(category);
+
+        // Devolvemos la categoría transformada a DTO con totalSpent, remaining y percentage
+        return ResponseEntity.ok(categoryService.toResponse(saved));
     }
-
-    
 
     // BORRAR CATEGORÍA Y TODAS LAS TRANSACCIONES
     // DELETE /api/categories/{id}

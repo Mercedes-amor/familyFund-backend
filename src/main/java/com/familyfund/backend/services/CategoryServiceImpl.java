@@ -7,9 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.familyfund.backend.dto.CategoryRequest;
+import com.familyfund.backend.dto.CategoryResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
+import com.familyfund.backend.modelo.Transaction;
 import com.familyfund.backend.repositories.CategoryRepository;
+import com.familyfund.backend.repositories.FamilyRepository;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -17,7 +20,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
     @Autowired
-    private FamilyService familyService;
+    private FamilyRepository familyRepository;
+
+    // @Autowired
+    // private TransactionService transactionService;
 
     // Usamos @override para
     // Asegurarnos de que realmente estamos implementando la interfaz correcta
@@ -32,16 +38,38 @@ public class CategoryServiceImpl implements CategoryService {
 
     // CREAR CATEGORÍA A PARTIR DTO
     public Category createCategory(Long familyId, CategoryRequest request) {
-        Family family = familyService.findById(familyId);
-        if (family == null) {
-            throw new IllegalArgumentException("Familia no encontrada");
-        }
+        Family family = familyRepository.findById(familyId)
+                .orElseThrow(() -> new IllegalArgumentException("Familia no encontrada"));
 
         Category category = new Category();
         category.setName(request.getName());
+         category.setLimit(request.getLimit());
         category.setFamily(family);
 
         return categoryRepository.save(category);
+    }
+
+    // CREAR DTO CategoryResponse
+    public CategoryResponse toResponse(Category category) {
+        double totalSpent = category.getTransactions().stream()
+                .mapToDouble(Transaction::getAmount)
+                .sum();
+
+        Double limit = category.getLimit();
+        Double remaining = (limit != null) ? (limit - totalSpent) : null;
+        Double percentage = (limit != null && limit > 0)
+                ? (totalSpent / limit) * 100
+                : null;
+
+        CategoryResponse response = new CategoryResponse();
+        response.setId(category.getId());
+        response.setName(category.getName());
+        response.setLimit(limit);
+        response.setTotalSpent(totalSpent);
+        response.setRemaining(remaining);
+        response.setPercentage(percentage);
+
+        return response;
     }
 
     // OBTENER POR ID

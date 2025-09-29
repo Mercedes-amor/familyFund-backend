@@ -81,13 +81,16 @@ public class FamilyController {
             return ResponseEntity.notFound().build();
 
         Family family = familyOpt.get();
-        // Transformar categorías a DTO
-        List<CategoryResponse> categories = family.getCategories() != null ? family.getCategories().stream()
-                .map(c -> new CategoryResponse(c.getId(), c.getName()))
-                .collect(Collectors.toList())
-                : List.of();
 
-        FamilyResponse response = new FamilyResponse(family.getId(), family.getName(), categories);
+        // Obtenemos todas las categorías asociadas a la familia
+        List<Category> categories = categoryService.findByFamilyId(id);
+
+        // Transformamos cada categoría a DTO usando el mapper del service
+        List<CategoryResponse> res = categories.stream()
+                .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage
+                .collect(Collectors.toList());
+
+        FamilyResponse response = new FamilyResponse(family.getId(), family.getName(), res);
         return ResponseEntity.ok(response);
     }
 
@@ -104,10 +107,15 @@ public class FamilyController {
     // OBTENER LAS CATEGORÍAS DE UNA FAMILIA
     @GetMapping("/{id}/categories")
     public ResponseEntity<List<CategoryResponse>> getFamilyCategories(@PathVariable Long id) {
+        // Obtenemos todas las categorías asociadas a la familia
         List<Category> categories = categoryService.findByFamilyId(id);
+
+        // Transformamos cada categoría a DTO usando el mapper del service
         List<CategoryResponse> res = categories.stream()
-                .map(c -> new CategoryResponse(c.getId(), c.getName()))
+                .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage
                 .collect(Collectors.toList());
+
+        // Devolvemos la lista de CategoryResponse
         return ResponseEntity.ok(res);
     }
 

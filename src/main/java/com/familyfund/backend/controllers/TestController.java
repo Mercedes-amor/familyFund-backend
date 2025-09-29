@@ -27,6 +27,11 @@ public class TestController {
         return "pong";
     }
 
+    @GetMapping("/usuarios")
+    public List<Usuario> listarUsuarios() {
+        return usuarioRepository.findAll();
+    }
+
 
     // Obtención inflacción España
     @GetMapping("worldbank/pib-per-capita")

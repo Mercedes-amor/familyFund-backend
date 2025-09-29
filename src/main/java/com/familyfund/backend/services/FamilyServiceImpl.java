@@ -23,6 +23,8 @@ public class FamilyServiceImpl implements FamilyService {
 
     @Autowired
     UsuarioService usuarioService;
+    @Autowired
+    CategoryService categoryService;
 
     // NUEVA FAMILIA
     @Override
@@ -65,12 +67,14 @@ public class FamilyServiceImpl implements FamilyService {
     }
 
     // Obtener DTO de Familia por Id
+    @Override
     public FamilyResponse getFamilyById(Long familyId) {
         Family family = familyRepository.findById(familyId)
                 .orElseThrow(() -> new RuntimeException("Familia no encontrada"));
 
+        // Transformar categorías en CategoryResponse usando el método del CategoryService
         List<CategoryResponse> categories = family.getCategories().stream()
-                .map(c -> new CategoryResponse(c.getId(), c.getName()))
+                .map(categoryService::toResponse)
                 .toList();
 
         return new FamilyResponse(family.getId(), family.getName(), categories);
