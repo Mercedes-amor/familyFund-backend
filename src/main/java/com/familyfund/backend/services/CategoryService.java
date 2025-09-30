@@ -14,6 +14,7 @@ public interface CategoryService {
     List<Category> findByFamilyId(Long familyId);
     void deleteById(Long id);
     CategoryResponse toResponse(Category category);
+    double getTotalSpentInMonth(Long categoryId, String yearMonth);
 
 }
 
