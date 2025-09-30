@@ -19,7 +19,11 @@ public interface GoalService {
 
     public void deleteGoal(Long id);
 
-    public void evaluateGoals(Long familyId, String month);
+    public void evaluateGoal(Goal goal);
+
+    public void evaluateAllGoals();
 
     public GoalResponse createGoalFromDTO(GoalRequest dto);
+
+    public void evaluateAllFamiliesForMonth(String month);
 }

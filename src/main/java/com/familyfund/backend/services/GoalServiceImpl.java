@@ -129,7 +129,16 @@ public class GoalServiceImpl implements GoalService {
         goalRepository.deleteById(goalId);
     }
 
-    // Marcar objetivos conseguidos al final del mes
+    // ---- VERIFICAR OBJETIVOS CUMPLIDOS ----//
+
+    // Evaluar un goal concreto en su mes
+    public void evaluateGoal(Goal goal) {
+        String month = goal.getMonth(); // formato YYYY-MM de su propio mes
+        double spent = categoryService.getTotalSpentInMonth(goal.getCategory().getId(), month);
+        goal.setAchieved((goal.getCategory().getLimit() - spent) >= goal.getAmount());
+    }
+
+    // Evaluar todos los goals de una familia en un mes concreto
     public void evaluateGoals(Long familyId, String month) {
         List<Goal> goalsThisMonth = goalRepository.findByFamilyId(familyId)
                 .stream()
@@ -137,10 +146,29 @@ public class GoalServiceImpl implements GoalService {
                 .collect(Collectors.toList());
 
         for (Goal g : goalsThisMonth) {
-            double spent = categoryService.getTotalSpentInMonth(g.getCategory().getId(), month);
-            g.setAchieved((g.getCategory().getLimit() - spent) >= g.getAmount());
+            evaluateGoal(g);
             goalRepository.save(g);
         }
+    }
 
+    // Evaluar todos los goals de todas las familias de meses pasados y del actual
+    public void evaluateAllGoals() {
+        List<Goal> allGoals = goalRepository.findAll();
+
+        for (Goal g : allGoals) {
+            if (g.getAchieved() == null) { // no evaluado aún
+                evaluateGoal(g);
+                goalRepository.save(g);
+            }
+        }
+    }
+
+    // Al cierre de cada mes con Scheduler
+    // Evaluar todas las familias automáticamente
+    public void evaluateAllFamiliesForMonth(String month) {
+        List<Family> families = familyRepository.findAll();
+        for (Family family : families) {
+            evaluateGoals(family.getId(), month); //Método que calcula todos los objetivos de una familia y mes
+        }
     }
 }
