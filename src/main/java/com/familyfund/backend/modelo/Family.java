@@ -3,6 +3,7 @@ package com.familyfund.backend.modelo;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -40,7 +41,7 @@ public class Family {
     @JsonBackReference
     private List<Category> categories;
 
-    
     @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Goal> goals;
 }

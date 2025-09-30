@@ -2,6 +2,8 @@ package com.familyfund.backend.services;
 
 import java.util.List;
 
+import com.familyfund.backend.dto.GoalRequest;
+import com.familyfund.backend.dto.GoalResponse;
 import com.familyfund.backend.modelo.Goal;
 
 public interface GoalService {
@@ -13,7 +15,11 @@ public interface GoalService {
 
     public Goal updateGoal(Long id, Goal updatedGoal);
 
+    public Goal updateGoalFromRequest(Long goalId, GoalRequest request);
+
     public void deleteGoal(Long id);
 
     public void evaluateGoals(Long familyId, String month);
+
+    public GoalResponse createGoalFromDTO(GoalRequest dto);
 }

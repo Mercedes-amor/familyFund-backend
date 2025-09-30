@@ -6,7 +6,12 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.familyfund.backend.dto.GoalRequest;
+import com.familyfund.backend.dto.GoalResponse;
+import com.familyfund.backend.modelo.Category;
+import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Goal;
+import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
 import com.familyfund.backend.repositories.GoalRepository;
 
@@ -22,6 +27,9 @@ public class GoalServiceImpl implements GoalService {
     @Autowired
     FamilyRepository familyRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     // Obtener todos los objetivos de una familia
     public List<Goal> getAllGoalsByFamily(Long familyId) {
         return goalRepository.findByFamilyId(familyId);
@@ -29,17 +37,52 @@ public class GoalServiceImpl implements GoalService {
 
     // Obtener objetivos de un mes específico (YYYY-MM) y una familia
     public List<Goal> getGoalsByMonth(Long familyId, String month) {
-    return goalRepository.findByFamilyId(familyId)
-            .stream()
-            .filter(g -> month.equals(g.getMonth()))
-            .collect(Collectors.toList());
-}
+        return goalRepository.findByFamilyId(familyId)
+                .stream()
+                .filter(g -> month.equals(g.getMonth()))
+                .collect(Collectors.toList());
+    }
 
     // Crear nuevo objetivo
     public Goal createGoal(Goal goal) {
         // Asegurarse de que achieved sea false al crear
         goal.setAchieved(false);
         return goalRepository.save(goal);
+    }
+
+    // Crear un Goal a partir de un DTO
+    public GoalResponse createGoalFromDTO(GoalRequest dto) {
+        // Buscar familia
+        Family family = familyRepository.findById(dto.getFamilyId())
+                .orElseThrow(() -> new RuntimeException("Family not found"));
+
+        // Buscar categoría
+        Category category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        // Crear Goal
+        Goal goal = Goal.builder()
+                .name(dto.getName())
+                .amount(dto.getAmount())
+                .achieved(dto.getAchieved() != null ? dto.getAchieved() : false)
+                .month(dto.getMonth())
+                .family(family)
+                .category(category)
+                .build();
+
+        Goal savedGoal = goalRepository.save(goal);
+
+        // Devolver DTO de respuesta
+        GoalResponse response = new GoalResponse();
+        response.setId(savedGoal.getId());
+        response.setName(savedGoal.getName());
+        response.setAmount(savedGoal.getAmount());
+        response.setAchieved(savedGoal.getAchieved());
+        response.setMonth(savedGoal.getMonth());
+        response.setCategoryName(savedGoal.getCategory().getName());
+
+        return response;
+
     }
 
     // Actualizar objetivo existente
@@ -52,6 +95,30 @@ public class GoalServiceImpl implements GoalService {
                     goal.setMonth(updatedGoal.getMonth());
                     goal.setFamily(updatedGoal.getFamily());
                     goal.setAchieved(updatedGoal.getAchieved());
+                    return goalRepository.save(goal);
+                })
+                .orElseThrow(() -> new RuntimeException("Goal not found with id " + goalId));
+    }
+
+    // Actualizar desde DTO
+    public Goal updateGoalFromRequest(Long goalId, GoalRequest request) {
+        return goalRepository.findById(goalId)
+                .map(goal -> {
+                    goal.setName(request.getName());
+                    goal.setAmount(request.getAmount());
+                    goal.setMonth(request.getMonth());
+                    goal.setAchieved(request.getAchieved());
+
+                    // Asociar categoría
+                    Category category = categoryRepository.findById(request.getCategoryId())
+                            .orElseThrow(() -> new RuntimeException("Category not found"));
+                    goal.setCategory(category);
+
+                    // Asociar familia
+                    Family family = familyRepository.findById(request.getFamilyId())
+                            .orElseThrow(() -> new RuntimeException("Family not found"));
+                    goal.setFamily(family);
+
                     return goalRepository.save(goal);
                 })
                 .orElseThrow(() -> new RuntimeException("Goal not found with id " + goalId));

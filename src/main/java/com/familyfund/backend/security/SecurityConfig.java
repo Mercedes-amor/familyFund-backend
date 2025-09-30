@@ -67,6 +67,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/transactions/**").authenticated()
             .requestMatchers("/api/categories/**").authenticated()
             .requestMatchers("/api/families/**").authenticated() 
+            .requestMatchers("/api/goals/**").authenticated() 
 
             // Solo ADMIN
             .anyRequest().hasRole("USER") //CAMBIAR POR ADMIN
