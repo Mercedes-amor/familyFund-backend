@@ -1,5 +1,6 @@
 package com.familyfund.backend.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,39 +30,37 @@ public class FamilyServiceImpl implements FamilyService {
     // NUEVA FAMILIA
     @Override
     public Family createFamily(String name, Long userId) {
-        // Clausula seguridad
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre es obligatorio");
         }
 
-        // Obtener el usuario
         Usuario usuario = usuarioService.findById(userId);
         if (usuario == null) {
             throw new RuntimeException("Usuario no encontrado");
         }
 
-        // Método para generar un código aleatorio
         String generatedCode = UUID.randomUUID().toString().substring(0, 6);
 
         // Creamos la familia
         Family family = Family.builder()
                 .name(name)
                 .code(generatedCode)
-                .usuarios(List.of(usuario)) // Añadimos el usuario al List de family
+                .usuarios(new ArrayList<>())
+                .categories(new ArrayList<>())
                 .build();
 
-        usuario.setFamily(family); // Se le añade la familia al usuario
+        // Añadimos el usuario y ligamos
+        family.getUsuarios().add(usuario);
+        usuario.setFamily(family);
 
         // Crear categoría INGRESOS automáticamente
         Category ingresosCategory = new Category();
         ingresosCategory.setName("INGRESOS");
         ingresosCategory.setFamily(family);
+        family.getCategories().add(ingresosCategory);
 
-        // Añadimos esta categoría al List de familia
-        family.setCategories(List.of(ingresosCategory));
-
-        familyRepository.save(family); // Guardamos familia en repositorio
-        usuarioService.save(usuario); // Guardamos usuario en el repositorio
+        // Guardamos la familia; cascada se encargará de usuarios y categorías
+        familyRepository.save(family);
 
         return family;
     }
@@ -72,7 +71,8 @@ public class FamilyServiceImpl implements FamilyService {
         Family family = familyRepository.findById(familyId)
                 .orElseThrow(() -> new RuntimeException("Familia no encontrada"));
 
-        // Transformar categorías en CategoryResponse usando el método del CategoryService
+        // Transformar categorías en CategoryResponse usando el método del
+        // CategoryService
         List<CategoryResponse> categories = family.getCategories().stream()
                 .map(categoryService::toResponse)
                 .toList();

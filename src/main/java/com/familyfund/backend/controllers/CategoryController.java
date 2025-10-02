@@ -133,7 +133,7 @@ public class CategoryController {
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
         // Primero borramos todas las transacciones asociadas
-        transactionRepository.deleteAllByCategoryId(category.getId());
+        // transactionRepository.deleteAllByCategoryId(category.getId());
 
         // Ahora borramos la categoría del repositorio
         categoryRepository.delete(category);

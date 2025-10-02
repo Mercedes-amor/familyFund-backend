@@ -30,14 +30,13 @@ public class SecurityConfig {
     return new AuthTokenFilter();
   }
 
-@Bean
-public DaoAuthenticationProvider authenticationProvider() {
+  @Bean
+  public DaoAuthenticationProvider authenticationProvider() {
     // Pasamos UserDetailsService al constructor
     DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
     authProvider.setPasswordEncoder(passwordEncoder()); // sigue usando el encoder
     return authProvider;
-}
-
+  }
 
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
@@ -49,8 +48,8 @@ public DaoAuthenticationProvider authenticationProvider() {
     return new BCryptPasswordEncoder();
   }
 
-@Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
         .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -59,26 +58,23 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/api/ping").permitAll()
-            .requestMatchers("/api/usuarios").permitAll() 
-
-
+            .requestMatchers("/api/usuarios").permitAll()
+            .requestMatchers("/api/quotes").permitAll()
 
             // Endpoints que requieren autenticación (De momento solo authenticated)
             .requestMatchers("/api/transactions/**").authenticated()
             .requestMatchers("/api/categories/**").authenticated()
-            .requestMatchers("/api/families/**").authenticated() 
-            .requestMatchers("/api/goals/**").authenticated() 
+            .requestMatchers("/api/families/**").authenticated()
+            .requestMatchers("/api/goals/**").authenticated()
 
             // Solo ADMIN
-            .anyRequest().hasRole("USER") //CAMBIAR POR ADMIN
+            .anyRequest().hasRole("USER") // CAMBIAR POR ADMIN
         );
 
     http.authenticationProvider(authenticationProvider());
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     http.cors(Customizer.withDefaults());
     return http.build();
+  }
+
 }
-
-
-}
-
