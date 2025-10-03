@@ -57,20 +57,23 @@ public class FamilyController {
         return ResponseEntity.ok(new FamilyResponse(createdFamily.getId(), createdFamily.getName(), List.of()));
     }
 
-    // AÑADIR USUARIO A UNA FAMILIA
+    // UNIRSE A UNA FAMILIA
     @PostMapping("/join")
-    public ResponseEntity<?> joinFamily(@RequestBody JoinFamilyRequest request) {
+    public ResponseEntity<FamilyResponse> joinFamily(@RequestBody JoinFamilyRequest request) {
         Usuario usuario = usuarioService.findById(request.getUserId());
         Family family = familyService.findById(request.getFamilyId());
 
         if (usuario == null || family == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Usuario o familia no encontrada"));
+            return ResponseEntity.badRequest().build();
         }
 
+        // Ligamos usuario a la familia
         usuario.setFamily(family);
         usuarioService.save(usuario);
 
-        return ResponseEntity.ok(new MemberResponse(usuario.getId(), usuario.getNombre(), usuario.getEmail()));
+        // Transformamos la familia a DTO
+        FamilyResponse response = familyService.getFamilyById(family.getId());
+        return ResponseEntity.ok(response);
     }
 
     // OBTENER UNA FAMILIA POR ID

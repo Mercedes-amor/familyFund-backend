@@ -59,13 +59,13 @@ public class SecurityConfig {
             .requestMatchers("/error").permitAll()
             .requestMatchers("/api/ping").permitAll()
             .requestMatchers("/api/usuarios").permitAll()
-            .requestMatchers("/api/quotes").permitAll()
 
             // Endpoints que requieren autenticación (De momento solo authenticated)
             .requestMatchers("/api/transactions/**").authenticated()
             .requestMatchers("/api/categories/**").authenticated()
             .requestMatchers("/api/families/**").authenticated()
             .requestMatchers("/api/goals/**").authenticated()
+            .requestMatchers("/api/quotes/**").authenticated()
 
             // Solo ADMIN
             .anyRequest().hasRole("USER") // CAMBIAR POR ADMIN
