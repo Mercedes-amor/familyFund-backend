@@ -26,11 +26,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-//@SQLDelete(...): cuando llamemos a categoryRepository.delete(category), no se eliminará físicamente
-//Se ejecutará un UPDATE estableciendo deleted = true.
-@SQLDelete(sql = "UPDATE category SET deleted = true WHERE id = ?")
-//Las consultas automáticas como findAll no tendrán en cuenta las categorías deleted=true;
-@SQLRestriction("deleted = false")
+// @SQLDelete(...): cuando llamemos a categoryRepository.delete(category), no se
+// eliminará físicamente
+// Se ejecutará un UPDATE estableciendo deleted = true, en SQL 1 = TRUE/ 0 = FALSE.
+@SQLDelete(sql = "UPDATE category SET deleted = 1 WHERE id = ?")
+// Las consultas automáticas como findAll no tendrán en cuenta las categorías
+// deleted=true;
+@SQLRestriction("deleted = 0")
 public class Category {
 
     @Id
@@ -48,7 +50,7 @@ public class Category {
     @JoinColumn(name = "family_id")
     private Family family;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL) // quitamos orphanRemoval al pasar a soft-delete
     private List<Transaction> transactions;
 
     // Para el soft-delete

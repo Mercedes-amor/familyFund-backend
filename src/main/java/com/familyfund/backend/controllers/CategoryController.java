@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -121,23 +122,23 @@ public class CategoryController {
         // Guardamos la categoría actualizada
         Category saved = categoryService.save(category);
 
-        // Devolvemos la categoría transformada a DTO con totalSpent, remaining y percentage
+        // Devolvemos la categoría transformada a DTO con totalSpent, remaining y
+        // percentage
         return ResponseEntity.ok(categoryService.toResponse(saved));
     }
 
-    // BORRAR CATEGORÍA Y TODAS LAS TRANSACCIONES
-    // DELETE /api/categories/{id}
+    // SOFT-DELETED DE CATEGORÍA
+    // En realidad es un UPDATE dónde deleted = true;
     @DeleteMapping("delete/{id}")
+    @Transactional
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        // Primero borramos todas las transacciones asociadas
-        // transactionRepository.deleteAllByCategoryId(category.getId());
-
-        // Ahora borramos la categoría del repositorio
+        // Solo soft-delete: Hibernate aplicará @SQLDelete
         categoryRepository.delete(category);
 
         return ResponseEntity.ok(Map.of("message", "Categoría borrada correctamente"));
     }
+
 }
