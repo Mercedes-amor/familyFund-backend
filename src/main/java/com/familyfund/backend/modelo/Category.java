@@ -3,7 +3,6 @@ package com.familyfund.backend.modelo;
 import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -26,35 +25,28 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-// @SQLDelete(...): cuando llamemos a categoryRepository.delete(category), no se
-// eliminará físicamente
-// Se ejecutará un UPDATE estableciendo deleted = true, en SQL 1 = TRUE/ 0 = FALSE.
 @SQLDelete(sql = "UPDATE category SET deleted = 1 WHERE id = ?")
-// Las consultas automáticas como findAll no tendrán en cuenta las categorías
-// deleted=true;
-@SQLRestriction("deleted = 0")
 public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Category name cannot be empty")
+    @NotBlank
     private String name;
 
-    @NotNull(message = "Amount cannot be null")
-    @Positive(message = "Amount must be positive")
+    @NotNull
+    @Positive
     private Double limit;
 
     @ManyToOne
     @JoinColumn(name = "family_id")
     private Family family;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL) // quitamos orphanRemoval al pasar a soft-delete
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Transaction> transactions;
 
-    // Para el soft-delete
     @Builder.Default
     private boolean deleted = false;
-
 }
+

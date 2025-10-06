@@ -24,6 +24,7 @@ import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Transaction;
 import com.familyfund.backend.modelo.Usuario;
+import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.security.UserDetailsImpl;
 import com.familyfund.backend.services.CategoryService;
 import com.familyfund.backend.services.FamilyService;
@@ -45,6 +46,9 @@ public class FamilyController {
 
     @Autowired
     TransactionService transactionService;
+
+    @Autowired
+    CategoryRepository categoryRepository;
 
     // *CREAR FAMILIA*
     @PostMapping("/newfamily")
@@ -106,20 +110,35 @@ public class FamilyController {
         return ResponseEntity.ok(members);
     }
 
-    // OBTENER LAS CATEGORÍAS DE UNA FAMILIA
-    @GetMapping("/{id}/categories")
-    public ResponseEntity<List<CategoryResponse>> getFamilyCategories(@PathVariable Long id) {
-        // Obtenemos todas las categorías asociadas a la familia
-        List<Category> categories = categoryService.findByFamilyId(id);
+    // OBTENER LAS CATEGORÍAS ACTIVAS DE UNA FAMILIA
+@GetMapping("/{id}/categories")
+public ResponseEntity<List<CategoryResponse>> getFamilyCategories(@PathVariable Long id) {
+    // Obtenemos todas las categorías activas asociadas a la familia
+    List<Category> categories = categoryRepository.findByFamily_IdAndDeletedFalse(id);
 
-        // Transformamos cada categoría a DTO usando el mapper del service
-        List<CategoryResponse> res = categories.stream()
-                .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage
-                .collect(Collectors.toList());
+    // Transformamos cada categoría a DTO usando el mapper del service
+    List<CategoryResponse> res = categories.stream()
+            .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage y transacciones
+            .collect(Collectors.toList());
 
-        // Devolvemos la lista de CategoryResponse
-        return ResponseEntity.ok(res);
-    }
+    // Devolvemos la lista de CategoryResponse
+    return ResponseEntity.ok(res);
+}
+
+
+    // HISTÓRICO- OBTENER CATEGORÍAS DE UNA FAMILIA, INCLUIDAS BORRADAS
+   @GetMapping("/{id}/categories/history")
+public ResponseEntity<List<CategoryResponse>> getCategoriesHistory(@PathVariable Long id) {
+
+    List<Category> categories = categoryRepository.findAllIncludingDeletedWithTransactions(id);
+
+    List<CategoryResponse> res = categories.stream()
+            .map(categoryService::toResponse) // tu mapper debe incluir transacciones
+            .collect(Collectors.toList());
+
+    return ResponseEntity.ok(res);
+}
+
 
     // OBTENER LAS TRANSACCIONES DE UNA FAMILIA
     @GetMapping("/{id}/transactions")

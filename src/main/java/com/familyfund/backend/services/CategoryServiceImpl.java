@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +18,9 @@ import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
 import com.familyfund.backend.repositories.TransactionRepository;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -29,6 +32,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @PersistenceContext
+    private EntityManager em;
+
+    
     // @Autowired
     // private TransactionService transactionService;
 
@@ -78,7 +85,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         return response;
     }
-
+    //<---- MÉTODOS QUE OBVIAN LAS CATEGORÍAS DE deleted = true ---->//
     // OBTENER POR ID
     @Override
     public Category findById(Long id) {
@@ -98,6 +105,24 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findByFamily_Id(familyId);
     }
 
+    //<---- MÉTODO INCLUYE LAS CATEGORÍAS DE deleted = true ---->//
+    @Transactional
+    public List<Category> getCategoriesHistory(Long familyId) {
+        // Desactivar temporalmente el filtro
+        Session session = em.unwrap(Session.class);
+        session.disableFilter("deletedFilter");
+
+        List<Category> categories = categoryRepository.findAllIncludingDeletedWithTransactions(familyId);
+
+        // Opcional: volver a activar el filtro después
+        session.enableFilter("deletedFilter");
+
+        return categories;
+    }
+
+
+
+    
     // SOFT-DELETE - BORRAR POR ID
     @Override
     @Transactional

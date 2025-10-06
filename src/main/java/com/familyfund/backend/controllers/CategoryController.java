@@ -124,6 +124,7 @@ public class CategoryController {
 
         // Devolvemos la categoría transformada a DTO con totalSpent, remaining y
         // percentage
+        
         return ResponseEntity.ok(categoryService.toResponse(saved));
     }
 
@@ -140,5 +141,7 @@ public class CategoryController {
 
         return ResponseEntity.ok(Map.of("message", "Categoría borrada correctamente"));
     }
+
+
 
 }
