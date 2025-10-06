@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.familyfund.backend.dto.CategoryRequest;
 import com.familyfund.backend.dto.CategoryResponse;
@@ -15,6 +16,8 @@ import com.familyfund.backend.modelo.Transaction;
 import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
 import com.familyfund.backend.repositories.TransactionRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -95,10 +98,13 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findByFamily_Id(familyId);
     }
 
-    // BORRAR POR ID
+    // SOFT-DELETE - BORRAR POR ID
     @Override
+    @Transactional
     public void deleteById(Long id) {
-        categoryRepository.deleteById(id);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        categoryRepository.delete(category); // @SQLDelete se encargará de hacer UPDATE deleted = true en vez de DELETE
     }
 
     // TOTAL GASTOS DE UNA CATEGORÍA Y MES (YYYY-MM)
