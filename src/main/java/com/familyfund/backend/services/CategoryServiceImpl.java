@@ -82,6 +82,7 @@ public class CategoryServiceImpl implements CategoryService {
         response.setTotalSpent(totalSpent);
         response.setRemaining(remaining);
         response.setPercentage(percentage);
+        response.setDeleted(category.isDeleted());
 
         return response;
     }

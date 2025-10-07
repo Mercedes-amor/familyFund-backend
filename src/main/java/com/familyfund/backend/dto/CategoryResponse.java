@@ -16,6 +16,7 @@ public class CategoryResponse {
     private Double totalSpent;   // suma de transacciones de la categoria
     private Double remaining;    // limit - totalSpent
     private Double percentage;   // totalSpent / limit * 100
+    private boolean deleted;
 }
 
 
