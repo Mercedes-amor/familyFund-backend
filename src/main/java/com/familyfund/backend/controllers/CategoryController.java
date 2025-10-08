@@ -26,6 +26,8 @@ import com.familyfund.backend.services.CategoryService;
 import com.familyfund.backend.services.FamilyService;
 import com.familyfund.backend.services.TransactionService;
 
+import jakarta.persistence.EntityNotFoundException;
+
 //Para manejar CORS
 // @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -67,6 +69,14 @@ public class CategoryController {
     public ResponseEntity<?> getCategoriesByFamily(@PathVariable Long familyId) {
         List<Category> categories = categoryService.findByFamilyId(familyId);
         return ResponseEntity.ok(categories);
+    }
+
+    // OBTENER DTO DE UNA CATEGORÍA
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponse> getCategoryById(@PathVariable Long id) {
+        Category category = categoryService.findById(id);
+        CategoryResponse response = categoryService.toResponse(category);
+        return ResponseEntity.ok(response);
     }
 
     // OBTENER LAS TRANSACCIONES DE UNA CATEGORÍA
@@ -124,7 +134,7 @@ public class CategoryController {
 
         // Devolvemos la categoría transformada a DTO con totalSpent, remaining y
         // percentage
-        
+
         return ResponseEntity.ok(categoryService.toResponse(saved));
     }
 
@@ -141,7 +151,5 @@ public class CategoryController {
 
         return ResponseEntity.ok(Map.of("message", "Categoría borrada correctamente"));
     }
-
-
 
 }

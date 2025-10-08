@@ -1,6 +1,7 @@
 package com.familyfund.backend.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,6 +60,8 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(request.getName());
         category.setLimit(request.getLimit());
         category.setFamily(family);
+        category.setTransactions(new ArrayList<>());
+
 
         return categoryRepository.save(category);
     }
@@ -121,9 +124,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categories;
     }
 
-
-
-    
+   
     // SOFT-DELETE - BORRAR POR ID
     @Override
     @Transactional
