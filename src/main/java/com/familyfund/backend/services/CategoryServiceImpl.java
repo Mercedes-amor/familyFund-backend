@@ -36,7 +36,6 @@ public class CategoryServiceImpl implements CategoryService {
     @PersistenceContext
     private EntityManager em;
 
-    
     // @Autowired
     // private TransactionService transactionService;
 
@@ -61,7 +60,6 @@ public class CategoryServiceImpl implements CategoryService {
         category.setLimit(request.getLimit());
         category.setFamily(family);
         category.setTransactions(new ArrayList<>());
-
 
         return categoryRepository.save(category);
     }
@@ -89,7 +87,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         return response;
     }
-    //<---- MÉTODOS QUE OBVIAN LAS CATEGORÍAS DE deleted = true ---->//
+
+    // <---- MÉTODOS QUE OBVIAN LAS CATEGORÍAS DE deleted = true ---->//
     // OBTENER POR ID
     @Override
     public Category findById(Long id) {
@@ -109,7 +108,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findByFamily_Id(familyId);
     }
 
-    //<---- MÉTODO INCLUYE LAS CATEGORÍAS DE deleted = true ---->//
+    // <---- MÉTODO INCLUYE LAS CATEGORÍAS DE deleted = true ---->//
     @Transactional
     public List<Category> getCategoriesHistory(Long familyId) {
         // Desactivar temporalmente el filtro
@@ -124,7 +123,6 @@ public class CategoryServiceImpl implements CategoryService {
         return categories;
     }
 
-   
     // SOFT-DELETE - BORRAR POR ID
     @Override
     @Transactional
@@ -132,6 +130,21 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
         categoryRepository.delete(category); // @SQLDelete se encargará de hacer UPDATE deleted = true en vez de DELETE
+    }
+
+    @Transactional
+    @Override
+    public void deleteCategoryById(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+
+        LocalDate inicioMes = LocalDate.now().withDayOfMonth(1);
+        LocalDate inicioSiguienteMes = inicioMes.plusMonths(1);
+
+        transactionRepository.deleteByCategoryIdAndDateBetween(categoryId, inicioMes, inicioSiguienteMes);
+
+        // Soft delete de la categoría
+        categoryRepository.delete(category);
     }
 
     // TOTAL GASTOS DE UNA CATEGORÍA Y MES (YYYY-MM)

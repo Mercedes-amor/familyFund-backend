@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.hibernate.annotations.SQLDelete;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -43,10 +42,9 @@ public class Category {
     @JoinColumn(name = "family_id")
     private Family family;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category") // sin cascade ni orphanRemoval
     private List<Transaction> transactions;
 
     @Builder.Default
     private boolean deleted = false;
 }
-

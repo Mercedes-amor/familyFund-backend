@@ -1,5 +1,6 @@
 package com.familyfund.backend.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -25,8 +26,6 @@ import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.services.CategoryService;
 import com.familyfund.backend.services.FamilyService;
 import com.familyfund.backend.services.TransactionService;
-
-import jakarta.persistence.EntityNotFoundException;
 
 //Para manejar CORS
 // @CrossOrigin(origins = "*", maxAge = 3600)
@@ -139,14 +138,20 @@ public class CategoryController {
     }
 
     // SOFT-DELETED DE CATEGORÍA
-    // En realidad es un UPDATE dónde deleted = true;
+    // En realidad es un UPDATE de CATEGORIA dónde deleted = true;
     @DeleteMapping("delete/{id}")
     @Transactional
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        // Solo soft-delete: Hibernate aplicará @SQLDelete
+        // Solo transacciones del mes actual
+        LocalDate inicioMes = LocalDate.now().withDayOfMonth(1);
+        LocalDate inicioSiguienteMes = inicioMes.plusMonths(1);
+
+        transactionRepository.deleteByCategoryIdAndDateBetween(id, inicioMes, inicioSiguienteMes);
+
+        // Soft delete de la categoría
         categoryRepository.delete(category);
 
         return ResponseEntity.ok(Map.of("message", "Categoría borrada correctamente"));

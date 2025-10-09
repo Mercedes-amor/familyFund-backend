@@ -13,6 +13,7 @@ public interface CategoryService {
     List<Category> findAll();
     List<Category> findByFamilyId(Long familyId);
     void deleteById(Long id);
+    public void deleteCategoryById(Long categoryId);
     CategoryResponse toResponse(Category category);
     double getTotalSpentInMonth(Long categoryId, String yearMonth);
 

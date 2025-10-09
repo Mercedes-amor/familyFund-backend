@@ -10,8 +10,9 @@ import java.time.LocalDate;
 
 @Entity
 @Data
-//Renombramos la tabla ya que Transaction es una palabra reservada en SQL Server y nos daba error en las consultas
-@Table(name = "user_transaction") 
+// Renombramos la tabla ya que Transaction es una palabra reservada en SQL
+// Server y nos daba error en las consultas
+@Table(name = "user_transaction")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -30,8 +31,9 @@ public class Transaction {
     @NotNull(message = "Date cannot be null")
     private LocalDate date;
 
-    //Se genera automáticamente a partir de date
+    // Se genera automáticamente a partir de date
     private Integer month;
+    private int year;
 
     @NotNull(message = "Amount cannot be null")
     @Positive(message = "Amount must be positive")
@@ -45,11 +47,15 @@ public class Transaction {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @PrePersist //Debe calcularse antes de guardar nueva Transaction
-    @PreUpdate  //Debe calcularse antes dde guardar un update de Transaction
-    private void calculateMonth() {
+
+
+    @PrePersist // Debe calcularse antes de guardar nueva Transaction
+    @PreUpdate // Debe calcularse antes de guardar un update de Transaction
+    private void calculateMonthAndYear() {
         if (this.date != null) {
-            this.month = this.date.getMonthValue(); // Valores 1-12
+            this.month = this.date.getMonthValue();
+            this.year = this.date.getYear();
         }
     }
+
 }
