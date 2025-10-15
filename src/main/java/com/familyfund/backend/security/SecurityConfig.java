@@ -68,7 +68,8 @@ public class SecurityConfig {
             .requestMatchers("/api/quotes/**").authenticated()
 
             // Solo ADMIN
-            .anyRequest().hasRole("USER") // CAMBIAR POR ADMIN
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .anyRequest().hasRole("ADMIN")
         );
 
     http.authenticationProvider(authenticationProvider());

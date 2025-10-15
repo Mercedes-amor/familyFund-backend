@@ -101,7 +101,7 @@ public class AuthController {
         user.setFamily(null); // explícito, si no pertenece a ninguna familia aún
         usuarioRepository.save(user);
 
-        return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente"));
+        return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente, inicia sesión"));
     }
 
     //OBTENER DATOS DE UN USUARIO
