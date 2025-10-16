@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.familyfund.backend.dto.FamilyUpdateRequest;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.CategoryRepository;
@@ -104,11 +105,11 @@ public class AdminController {
 
     // EDITAR UNA FAMILIA
     @PutMapping("/familias/{id}")
-    public ResponseEntity<Family> editarFamilia(@PathVariable Long id, @RequestBody Family familiaActualizada) {
+    public ResponseEntity<Family> editarFamilia(@PathVariable Long id,
+            @RequestBody FamilyUpdateRequest updateRequest) {
         return familyRepository.findById(id)
                 .map(familia -> {
-                    familia.setName(familiaActualizada.getName());
-                    familia.setCode(familiaActualizada.getCode());
+                    familia.setName(updateRequest.getName());
                     Family guardada = familyRepository.save(familia);
                     return ResponseEntity.ok(guardada);
                 })

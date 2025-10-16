@@ -58,7 +58,7 @@ public class SecurityConfig {
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/error").permitAll()
             .requestMatchers("/api/ping").permitAll()
-            .requestMatchers("/api/usuarios").permitAll()
+            // .requestMatchers("/api/usuarios").permitAll()
 
             // Endpoints que requieren autenticación (De momento solo authenticated)
             .requestMatchers("/api/transactions/**").authenticated()
@@ -69,8 +69,9 @@ public class SecurityConfig {
 
             // Solo ADMIN
             .requestMatchers("/api/admin/**").hasRole("ADMIN")
-            .anyRequest().hasRole("ADMIN")
-        );
+            // .requestMatchers("/api/admin/**").authenticated()
+
+            .anyRequest().hasRole("ADMIN"));
 
     http.authenticationProvider(authenticationProvider());
     http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
