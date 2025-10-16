@@ -18,26 +18,29 @@ public class UsuarioServiceImpl implements UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    //Crear y guardar nuevo Usuario
+    // Crear y guardar nuevo Usuario
     @Override
     public Usuario save(Usuario usuario) {
+        if (usuario.getPhotoUrl() == null) {
+            usuario.setPhotoUrl("/images/default-profile.png");
+        }
         return usuarioRepository.save(usuario);
     }
 
-    //Mostrar todos los usuarios
+    // Mostrar todos los usuarios
     @Override
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();
     }
 
-    //Buscar por id
+    // Buscar por id
     @Override
     public Usuario findById(Long id) {
         Optional<Usuario> usuario = usuarioRepository.findById(id);
         return usuario.orElse(null);
     }
 
-     //Buscar por email
+    // Buscar por email
     @Override
     public Usuario findByEmail(String email) {
         return usuarioRepository.findByEmail(email);
@@ -47,12 +50,11 @@ public class UsuarioServiceImpl implements UsuarioService {
     public List<Usuario> findByFamilyId(Long familyId) {
         return usuarioRepository.findByFamily_Id(familyId);
     }
-    
-    //Borrar por id
+
+    // Borrar por id
     @Override
     public void deleteById(Long id) {
         usuarioRepository.deleteById(id);
     }
 
-   
 }

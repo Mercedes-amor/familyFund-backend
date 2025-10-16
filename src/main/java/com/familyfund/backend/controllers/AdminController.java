@@ -15,13 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.familyfund.backend.dto.FamilyUpdateRequest;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Usuario;
-import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
-import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.repositories.UsuarioRepository;
-import com.familyfund.backend.services.CategoryService;
-import com.familyfund.backend.services.FamilyService;
-import com.familyfund.backend.services.TransactionService;
 
 //Rutas de gestión aplicación, protegidas para Admin
 @RestController

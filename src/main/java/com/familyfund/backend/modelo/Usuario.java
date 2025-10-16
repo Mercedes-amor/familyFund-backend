@@ -39,6 +39,9 @@ public class Usuario {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = true)
+    private String photoUrl;
+
     @Enumerated(EnumType.STRING) // Nos aseguramos de indicar a JPA que el enum persiste como String,
                                  // en la base de datos se guarda como Varchar
     @Column(nullable = false)

@@ -98,7 +98,7 @@ public class FamilyServiceImpl implements FamilyService {
                 .orElseThrow(() -> new RuntimeException("Familia no encontrada"));
 
         return family.getUsuarios().stream()
-                .map(u -> new MemberResponse(u.getId(), u.getNombre(), u.getEmail()))
+                .map(u -> new MemberResponse(u.getId(), u.getNombre(), u.getEmail(), u.getPhotoUrl()))
                 .toList();
     }
 

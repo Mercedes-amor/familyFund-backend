@@ -28,6 +28,7 @@ public class UserDetailsImpl implements UserDetails {
   private String email;
 
   private String nombre;
+    private String photoUrl;  // <-- añadir aquí
 
   private Family family;
 
@@ -42,7 +43,8 @@ public static UserDetailsImpl build(Usuario user) {
     return new UserDetailsImpl(
         user.getId(),
         user.getEmail(),
-        user.getNombre(),    
+        user.getNombre(),
+        user.getPhotoUrl(),    
         user.getFamily(),
         user.getPassword(),
         authorities);

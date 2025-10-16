@@ -105,7 +105,7 @@ public class FamilyController {
     public ResponseEntity<List<MemberResponse>> getFamilyMembers(@PathVariable Long id) {
         List<Usuario> usuarios = usuarioService.findByFamilyId(id);
         List<MemberResponse> members = usuarios.stream()
-                .map(u -> new MemberResponse(u.getId(), u.getNombre(), u.getEmail()))
+                .map(u -> new MemberResponse(u.getId(), u.getNombre(), u.getEmail(),u.getPhotoUrl()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(members);
     }

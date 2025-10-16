@@ -15,6 +15,8 @@ public class JwtResponseDto {
   private String nombre;
   private String email;
   private Family family;
+  private String photoUrl;
   private String rol;
+  
 }
 

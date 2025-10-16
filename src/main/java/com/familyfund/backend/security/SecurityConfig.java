@@ -66,6 +66,7 @@ public class SecurityConfig {
             .requestMatchers("/api/families/**").authenticated()
             .requestMatchers("/api/goals/**").authenticated()
             .requestMatchers("/api/quotes/**").authenticated()
+            .requestMatchers("/api/upload/**").authenticated()
 
             // Solo ADMIN
             .requestMatchers("/api/admin/**").hasRole("ADMIN")

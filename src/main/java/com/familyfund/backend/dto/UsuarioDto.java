@@ -14,5 +14,6 @@ public class UsuarioDto {
     private String nombre;
     private String email;
     private Family family;
+    private String photoUrl;
 }
 

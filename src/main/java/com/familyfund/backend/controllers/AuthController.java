@@ -64,6 +64,7 @@ public class AuthController {
                 userDetails.getNombre(), 
                 userDetails.getEmail(), 
                 userDetails.getFamily(),    
+                userDetails.getPhotoUrl(),
                 rol));
     }
 
@@ -113,6 +114,6 @@ public class AuthController {
         }
 
         Usuario u = user.get();
-        return ResponseEntity.ok(new UsuarioDto(u.getId(), u.getNombre(), u.getEmail(), u.getFamily()));
+        return ResponseEntity.ok(new UsuarioDto(u.getId(), u.getNombre(), u.getEmail(), u.getFamily(), u.getPhotoUrl()));
     }
 }
