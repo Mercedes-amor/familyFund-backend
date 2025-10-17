@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.familyfund.backend.dto.CategoryResponse;
 import com.familyfund.backend.dto.FamilyResponse;
@@ -14,13 +15,19 @@ import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Usuario;
+import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
+import com.familyfund.backend.repositories.UsuarioRepository;
 
 @Service
 public class FamilyServiceImpl implements FamilyService {
 
     @Autowired
     FamilyRepository familyRepository;
+    @Autowired
+    UsuarioRepository usuarioRepository;
+    @Autowired
+    CategoryRepository categoryRepository;
 
     @Autowired
     UsuarioService usuarioService;
@@ -111,7 +118,18 @@ public class FamilyServiceImpl implements FamilyService {
 
     // Borrar por id
     @Override
+    @Transactional //asegura que la operación se ejecute dentro de la transacción.
     public void deleteById(Long id) {
+        // 1. Desvinculamos usuarios
+        usuarioRepository.findByFamily_Id(id).forEach(user -> user.setFamily(null));
+
+        // 2. Guardamos los usuarios actualizados
+        usuarioRepository.flush(); // asegura que se aplique antes del delete de la familia
+
+        // 3. Borramos las categorías asociadas
+        categoryRepository.deleteByFamilyId(id);
+
+        // 4. Borramos la familia
         familyRepository.deleteById(id);
     }
 

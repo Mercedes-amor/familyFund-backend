@@ -26,6 +26,7 @@ import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.UsuarioRepository;
 import com.familyfund.backend.security.JwtUtils;
 import com.familyfund.backend.security.UserDetailsImpl;
+import com.familyfund.backend.services.UsuarioService;
 
 import jakarta.validation.Valid;
 
@@ -39,6 +40,8 @@ public class AuthController {
 
     @Autowired
     UsuarioRepository usuarioRepository;
+    @Autowired
+    UsuarioService usuarioService;
 
     @Autowired
     PasswordEncoder encoder;
@@ -46,7 +49,7 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
-    //LOGING
+    // LOGING
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginDto loginDto) {
 
@@ -61,14 +64,14 @@ public class AuthController {
 
         return ResponseEntity.<JwtResponseDto>ok(new JwtResponseDto(jwt, "Bearer",
                 userDetails.getId(),
-                userDetails.getNombre(), 
-                userDetails.getEmail(), 
-                userDetails.getFamily(),    
+                userDetails.getNombre(),
+                userDetails.getEmail(),
+                userDetails.getFamily(),
                 userDetails.getPhotoUrl(),
                 rol));
     }
 
-    //REGISTRO
+    // REGISTRO
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupDto signUpRequest) {
         if (usuarioRepository.existsByNombre(signUpRequest.getNombre())) {
@@ -100,13 +103,13 @@ public class AuthController {
         user.setPassword(encoder.encode(signUpRequest.getPassword()));
         user.setRol(rolUsuario);
         user.setFamily(null); // explícito, si no pertenece a ninguna familia aún
-        usuarioRepository.save(user);
+        usuarioService.save(user);
 
         return ResponseEntity.ok(new MessageResponse("Usuario registrado correctamente, inicia sesión"));
     }
 
-    //OBTENER DATOS DE UN USUARIO
-        @GetMapping("/user/{id}")
+    // OBTENER DATOS DE UN USUARIO
+    @GetMapping("/user/{id}")
     public ResponseEntity<UsuarioDto> getUser(@PathVariable Long id) {
         Optional<Usuario> user = usuarioRepository.findById(id);
         if (user.isEmpty()) {
@@ -114,6 +117,7 @@ public class AuthController {
         }
 
         Usuario u = user.get();
-        return ResponseEntity.ok(new UsuarioDto(u.getId(), u.getNombre(), u.getEmail(), u.getFamily(), u.getPhotoUrl()));
+        return ResponseEntity
+                .ok(new UsuarioDto(u.getId(), u.getNombre(), u.getEmail(), u.getFamily(), u.getPhotoUrl()));
     }
 }

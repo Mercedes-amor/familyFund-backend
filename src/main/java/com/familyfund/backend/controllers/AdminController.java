@@ -1,6 +1,7 @@
 package com.familyfund.backend.controllers;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,18 +14,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.familyfund.backend.dto.FamilyUpdateRequest;
+import com.familyfund.backend.dto.UsuarioResponseAdmin;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.FamilyRepository;
 import com.familyfund.backend.repositories.UsuarioRepository;
+import com.familyfund.backend.services.FamilyService;
 
 //Rutas de gestión aplicación, protegidas para Admin
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    // @Autowired
-    // private FamilyService familyService;
+    @Autowired
+    private FamilyService familyService;
     // @Autowired
     // private CategoryService categoryService;
     // @Autowired
@@ -42,10 +45,20 @@ public class AdminController {
     // ===================== USUARIOS =====================
 
     // OBTENER TODOS LOS USUARIOS
-    @GetMapping("/usuarios")
-    public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findAll();
-    }
+   @GetMapping("/usuarios")
+public List<UsuarioResponseAdmin> listarUsuarios() {
+    return usuarioRepository.findAll().stream()
+        .map(u -> new UsuarioResponseAdmin(
+                u.getId(),
+                u.getNombre(),
+                u.getApellido(),
+                u.getEdad(),
+                u.getEmail(),
+                u.getRol(),
+                u.getFamily() != null ? u.getFamily().getId() : null
+        ))
+        .collect(Collectors.toList());
+}
 
     // OBTENER UN USUARIO POR ID
     @GetMapping("/usuarios/{id}")
@@ -114,12 +127,11 @@ public class AdminController {
     // BORRAR FAMILIA
     @DeleteMapping("/familias/{id}")
     public ResponseEntity<Void> borrarFamilia(@PathVariable Long id) {
-        return familyRepository.findById(id)
-                .map(familia -> {
-                    familyRepository.delete(familia);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        if (familyRepository.existsById(id)) {
+            familyService.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
 }

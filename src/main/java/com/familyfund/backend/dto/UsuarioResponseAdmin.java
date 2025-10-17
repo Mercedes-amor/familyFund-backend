@@ -1,21 +1,20 @@
 package com.familyfund.backend.dto;
 
-import com.familyfund.backend.modelo.Family;
+import com.familyfund.backend.modelo.Rol;
+import lombok.Data;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class UsuarioDto {
+public class UsuarioResponseAdmin {
     private Long id;
     private String nombre;
+    private String apellido;
+    private int edad;
     private String email;
-    private Family family;
-    private String photoUrl;
+    private Rol rol;
+    private Long familyId;
 }
-

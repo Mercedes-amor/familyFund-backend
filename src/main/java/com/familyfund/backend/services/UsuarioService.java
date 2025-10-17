@@ -2,6 +2,7 @@ package com.familyfund.backend.services;
 
 import java.util.List;
 
+import com.familyfund.backend.dto.UsuarioDto;
 import com.familyfund.backend.modelo.Usuario;
 
 public interface UsuarioService {
@@ -11,4 +12,5 @@ public interface UsuarioService {
     void deleteById(Long id);              // Eliminar por ID
     Usuario findByEmail(String email);     // Buscar por email (opcional)
     List<Usuario> findByFamilyId(Long familyId);
+    UsuarioDto toDto(Usuario usuario);     //Convertir Usuario a DTO
 }

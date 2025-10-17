@@ -2,6 +2,7 @@ package com.familyfund.backend.services;
 
 import org.springframework.stereotype.Service;
 
+import com.familyfund.backend.dto.UsuarioDto;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.UsuarioRepository;
 
@@ -22,7 +23,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public Usuario save(Usuario usuario) {
         if (usuario.getPhotoUrl() == null) {
-            usuario.setPhotoUrl("/images/default-profile.png");
+            usuario.setPhotoUrl("https://res.cloudinary.com/dz2owkkwa/image/upload/v1760687036/Familyfund/Dise%C3%B1o_sin_t%C3%ADtulo-removebg-preview_vqqzhb.png");
         }
         return usuarioRepository.save(usuario);
     }
@@ -56,5 +57,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     public void deleteById(Long id) {
         usuarioRepository.deleteById(id);
     }
+
+
+    //Convertir Usuario a UsuarioDTO
+    public UsuarioDto toDto(Usuario usuario) {
+    if (usuario == null) return null;
+    UsuarioDto dto = new UsuarioDto();
+    dto.setId(usuario.getId());
+    dto.setNombre(usuario.getNombre());
+    dto.setEmail(usuario.getEmail());
+    dto.setFamily(usuario.getFamily());
+    dto.setPhotoUrl(usuario.getPhotoUrl());
+    return dto;
+}
 
 }
