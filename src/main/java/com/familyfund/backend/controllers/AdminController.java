@@ -1,10 +1,12 @@
 package com.familyfund.backend.controllers;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import com.familyfund.backend.dto.UsuarioResponseAdmin;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.FamilyRepository;
+import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.repositories.UsuarioRepository;
 import com.familyfund.backend.services.FamilyService;
 
@@ -39,26 +42,25 @@ public class AdminController {
     private FamilyRepository familyRepository;
     // @Autowired
     // private CategoryRepository categoryRepository;
-    // @Autowired
-    // private TransactionRepository transactionRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
 
     // ===================== USUARIOS =====================
 
     // OBTENER TODOS LOS USUARIOS
-   @GetMapping("/usuarios")
-public List<UsuarioResponseAdmin> listarUsuarios() {
-    return usuarioRepository.findAll().stream()
-        .map(u -> new UsuarioResponseAdmin(
-                u.getId(),
-                u.getNombre(),
-                u.getApellido(),
-                u.getEdad(),
-                u.getEmail(),
-                u.getRol(),
-                u.getFamily() != null ? u.getFamily().getId() : null
-        ))
-        .collect(Collectors.toList());
-}
+    @GetMapping("/usuarios")
+    public List<UsuarioResponseAdmin> listarUsuarios() {
+        return usuarioRepository.findAll().stream()
+                .map(u -> new UsuarioResponseAdmin(
+                        u.getId(),
+                        u.getNombre(),
+                        u.getApellido(),
+                        u.getEdad(),
+                        u.getEmail(),
+                        u.getRol(),
+                        u.getFamily() != null ? u.getFamily().getId() : null))
+                .collect(Collectors.toList());
+    }
 
     // OBTENER UN USUARIO POR ID
     @GetMapping("/usuarios/{id}")
@@ -70,29 +72,58 @@ public List<UsuarioResponseAdmin> listarUsuarios() {
 
     // EDITAR UN USUARIO
     @PutMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> editarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioActualizado) {
+    public ResponseEntity<UsuarioResponseAdmin> editarUsuario(
+            @PathVariable Long id,
+            @RequestBody UsuarioResponseAdmin dto) {
+
         return usuarioRepository.findById(id)
                 .map(usuario -> {
-                    usuario.setNombre(usuarioActualizado.getNombre());
-                    usuario.setEmail(usuarioActualizado.getEmail());
-                    usuario.setPassword(usuarioActualizado.getPassword());
-                    usuario.setRol(usuarioActualizado.getRol());
-                    usuario.setFamily(usuarioActualizado.getFamily());
+                    usuario.setNombre(dto.getNombre());
+                    usuario.setApellido(dto.getApellido());
+                    usuario.setEdad(dto.getEdad());
+                    usuario.setEmail(dto.getEmail());
+                    usuario.setRol(dto.getRol());
+
+                    if (dto.getFamilyId() != null) {
+                        Family family = familyRepository.findById(dto.getFamilyId())
+                                .orElse(null);
+                        usuario.setFamily(family);
+                    }
+
                     Usuario guardado = usuarioRepository.save(usuario);
-                    return ResponseEntity.ok(guardado);
+
+                    UsuarioResponseAdmin response = new UsuarioResponseAdmin(
+                            guardado.getId(),
+                            guardado.getNombre(),
+                            guardado.getApellido(),
+                            guardado.getEdad() != null ? guardado.getEdad() : 0,
+                            guardado.getEmail(),
+                            guardado.getRol(),
+                            guardado.getFamily() != null ? guardado.getFamily().getId() : null);
+
+                    return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // BORRAR USUARIO
     @DeleteMapping("/usuarios/{id}")
-    public ResponseEntity<Void> borrarUsuario(@PathVariable Long id) {
-        return usuarioRepository.findById(id)
-                .map(usuario -> {
-                    usuarioRepository.delete(usuario);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    @Transactional
+    public ResponseEntity<String> borrarUsuario(@PathVariable Long id) {
+        Optional<Usuario> optUsuario = usuarioRepository.findById(id);
+        if (optUsuario.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Usuario usuario = optUsuario.get();
+
+        // Ponemos user_id a null en sus transacciones
+        transactionRepository.setUsuarioNull(usuario);
+
+        // Borramos usuario
+        usuarioRepository.delete(usuario);
+
+        return ResponseEntity.ok("Usuario borrado correctamente");
     }
 
     // ===================== FAMILIAS =====================

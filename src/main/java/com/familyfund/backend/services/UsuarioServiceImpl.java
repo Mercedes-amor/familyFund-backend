@@ -1,9 +1,12 @@
 package com.familyfund.backend.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.familyfund.backend.dto.UsuarioDto;
 import com.familyfund.backend.modelo.Usuario;
+import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.repositories.UsuarioRepository;
 
 import java.util.List;
@@ -19,11 +22,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
+    @Autowired
+    TransactionRepository transactionRepository;
+
     // Crear y guardar nuevo Usuario
     @Override
     public Usuario save(Usuario usuario) {
         if (usuario.getPhotoUrl() == null) {
-            usuario.setPhotoUrl("https://res.cloudinary.com/dz2owkkwa/image/upload/v1760687036/Familyfund/Dise%C3%B1o_sin_t%C3%ADtulo-removebg-preview_vqqzhb.png");
+            usuario.setPhotoUrl(
+                    "https://res.cloudinary.com/dz2owkkwa/image/upload/v1760687036/Familyfund/Dise%C3%B1o_sin_t%C3%ADtulo-removebg-preview_vqqzhb.png");
         }
         return usuarioRepository.save(usuario);
     }
@@ -58,17 +65,30 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
+    @Transactional
+    public void borrarUsuario(Long usuarioId) {
+        // Buscar usuario
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    //Convertir Usuario a UsuarioDTO
+        // Poner user_id a null en todas sus transacciones
+        transactionRepository.setUsuarioNull(usuario);
+
+        // Borrar usuario
+        usuarioRepository.delete(usuario);
+    }
+
+    // Convertir Usuario a UsuarioDTO
     public UsuarioDto toDto(Usuario usuario) {
-    if (usuario == null) return null;
-    UsuarioDto dto = new UsuarioDto();
-    dto.setId(usuario.getId());
-    dto.setNombre(usuario.getNombre());
-    dto.setEmail(usuario.getEmail());
-    dto.setFamily(usuario.getFamily());
-    dto.setPhotoUrl(usuario.getPhotoUrl());
-    return dto;
-}
+        if (usuario == null)
+            return null;
+        UsuarioDto dto = new UsuarioDto();
+        dto.setId(usuario.getId());
+        dto.setNombre(usuario.getNombre());
+        dto.setEmail(usuario.getEmail());
+        dto.setFamily(usuario.getFamily());
+        dto.setPhotoUrl(usuario.getPhotoUrl());
+        return dto;
+    }
 
 }

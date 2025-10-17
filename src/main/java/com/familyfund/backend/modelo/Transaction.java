@@ -40,7 +40,7 @@ public class Transaction {
     private Double amount;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private Usuario usuario;
 
     @ManyToOne
