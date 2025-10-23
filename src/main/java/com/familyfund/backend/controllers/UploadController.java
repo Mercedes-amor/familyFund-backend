@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.security.Principal;
 
-import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -32,30 +31,38 @@ public class UploadController {
 
     // @SuppressWarnings("unchecked")
     @PostMapping(path = "/upload-photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UsuarioDto> upload(@RequestParam("file") MultipartFile file, Principal principal)
-            throws IOException {
+    public ResponseEntity<UsuarioDto> upload(@RequestParam("file") MultipartFile file, Principal principal) {
+        try {
+            // Subimos a Cloudinary en carpeta Familyfund
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap("folder", "Familyfund"));
 
-        // Subimos a Cloudinary
-        Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-        System.out.println("Respuesta Cloudinary: " +uploadResult); // Respuesta de Cloudinary
+            String url = (String) uploadResult.get("secure_url");
+            System.out.println("Cloudinary URL: " + url);
 
-        // Obtenemos URL segura
-        String url = (String) uploadResult.get("secure_url");
+            // Buscamos el usuario autenticado
+            Usuario userToUpdate = usuarioRepository.findByEmail(principal.getName());
+            if (userToUpdate == null) {
+                System.err.println("Usuario no encontrado: " + principal.getName());
+                return ResponseEntity.notFound().build();
+            }
 
-        // Buscamos al usuario autenticado
-        Usuario userToUpdate = usuarioRepository.findByEmail(principal.getName());
-        if (userToUpdate == null) {
-            return ResponseEntity.notFound().build();
+            // Guardamos la nueva URL usando el servicio (incluye lógica de foto por defecto)
+            userToUpdate.setPhotoUrl(url);
+            Usuario updatedUser = usuarioService.save(userToUpdate);
+
+            // Convertimos a DTO
+            UsuarioDto usuarioDto = usuarioService.toDto(updatedUser);
+
+            // Devolvemos al frontend
+            return ResponseEntity.ok(usuarioDto);
+
+        } catch (Exception e) {
+            System.err.println("Error en upload-photo: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
         }
-
-        // Guardamos nueva URL
-        userToUpdate.setPhotoUrl(url);
-        Usuario updatedUser = usuarioRepository.save(userToUpdate);
-
-        // Convertimos a DTO
-        UsuarioDto usuarioDto = usuarioService.toDto(updatedUser);
-
-        // Devolvemos al frontend
-        return ResponseEntity.ok(usuarioDto);
     }
+
 }

@@ -105,40 +105,38 @@ public class FamilyController {
     public ResponseEntity<List<MemberResponse>> getFamilyMembers(@PathVariable Long id) {
         List<Usuario> usuarios = usuarioService.findByFamilyId(id);
         List<MemberResponse> members = usuarios.stream()
-                .map(u -> new MemberResponse(u.getId(), u.getNombre(), u.getEmail(),u.getPhotoUrl()))
+                .map(u -> new MemberResponse(u.getId(), u.getNombre(), u.getEmail(), u.getPhotoUrl()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(members);
     }
 
     // OBTENER LAS CATEGORÍAS ACTIVAS DE UNA FAMILIA
-@GetMapping("/{id}/categories")
-public ResponseEntity<List<CategoryResponse>> getFamilyCategories(@PathVariable Long id) {
-    // Obtenemos todas las categorías activas asociadas a la familia
-    List<Category> categories = categoryRepository.findByFamily_IdAndDeletedFalse(id);
+    @GetMapping("/{id}/categories")
+    public ResponseEntity<List<CategoryResponse>> getFamilyCategories(@PathVariable Long id) {
+        // Obtenemos todas las categorías activas asociadas a la familia
+        List<Category> categories = categoryRepository.findByFamily_IdAndDeletedFalse(id);
 
-    // Transformamos cada categoría a DTO usando el mapper del service
-    List<CategoryResponse> res = categories.stream()
-            .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage y transacciones
-            .collect(Collectors.toList());
+        // Transformamos cada categoría a DTO usando el mapper del service
+        List<CategoryResponse> res = categories.stream()
+                .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage y transacciones
+                .collect(Collectors.toList());
 
-    // Devolvemos la lista de CategoryResponse
-    return ResponseEntity.ok(res);
-}
-
+        // Devolvemos la lista de CategoryResponse
+        return ResponseEntity.ok(res);
+    }
 
     // HISTÓRICO- OBTENER CATEGORÍAS DE UNA FAMILIA, INCLUIDAS BORRADAS
-   @GetMapping("/{id}/categories/history")
-public ResponseEntity<List<CategoryResponse>> getCategoriesHistory(@PathVariable Long id) {
+    @GetMapping("/{id}/categories/history")
+    public ResponseEntity<List<CategoryResponse>> getCategoriesHistory(@PathVariable Long id) {
 
-    List<Category> categories = categoryRepository.findAllIncludingDeletedWithTransactions(id);
+        List<Category> categories = categoryRepository.findAllIncludingDeletedWithTransactions(id);
 
-    List<CategoryResponse> res = categories.stream()
-            .map(categoryService::toResponse) // tu mapper debe incluir transacciones
-            .collect(Collectors.toList());
+        List<CategoryResponse> res = categories.stream()
+                .map(categoryService::toResponse) // tu mapper debe incluir transacciones
+                .collect(Collectors.toList());
 
-    return ResponseEntity.ok(res);
-}
-
+        return ResponseEntity.ok(res);
+    }
 
     // OBTENER LAS TRANSACCIONES DE UNA FAMILIA
     @GetMapping("/{id}/transactions")

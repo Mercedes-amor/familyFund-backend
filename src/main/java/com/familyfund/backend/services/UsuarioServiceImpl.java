@@ -30,7 +30,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     public Usuario save(Usuario usuario) {
         if (usuario.getPhotoUrl() == null) {
             usuario.setPhotoUrl(
-                    "https://res.cloudinary.com/dz2owkkwa/image/upload/v1760687036/Familyfund/Dise%C3%B1o_sin_t%C3%ADtulo-removebg-preview_vqqzhb.png");
+                    "https://res.cloudinary.com/dz2owkkwa/image/upload/v1761215068/Familyfund/ProfileDefault_kyrpza.png");
         }
         return usuarioRepository.save(usuario);
     }
