@@ -58,6 +58,7 @@ public class AdminController {
                         u.getEdad(),
                         u.getEmail(),
                         u.getRol(),
+                        u.getPhotoUrl(),
                         u.getFamily() != null ? u.getFamily().getId() : null))
                 .collect(Collectors.toList());
     }
@@ -99,6 +100,7 @@ public class AdminController {
                             guardado.getEdad() != null ? guardado.getEdad() : 0,
                             guardado.getEmail(),
                             guardado.getRol(),
+                            guardado.getPhotoUrl(),
                             guardado.getFamily() != null ? guardado.getFamily().getId() : null);
 
                     return ResponseEntity.ok(response);

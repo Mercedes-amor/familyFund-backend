@@ -16,5 +16,6 @@ public class UsuarioResponseAdmin {
     private int edad;
     private String email;
     private Rol rol;
+    private String photoUrl;
     private Long familyId;
 }
