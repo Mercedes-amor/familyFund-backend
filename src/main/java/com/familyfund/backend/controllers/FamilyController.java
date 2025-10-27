@@ -145,7 +145,7 @@ public class FamilyController {
 
         List<TransactionResponse> res = transactions.stream()
                 .map(c -> new TransactionResponse(c.getId(), c.getName(), c.getType(), c.getDate(), c.getAmount(),
-                        c.getCategory().getId()))
+                        c.getCategory().getId(), c.getUsuario()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(res);
     }

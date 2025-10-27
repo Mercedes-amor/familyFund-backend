@@ -15,6 +15,7 @@ import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.repositories.UsuarioRepository;
+import com.familyfund.backend.security.UserDetailsImpl;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -59,7 +60,8 @@ public class TransactionServiceImpl implements TransactionService {
                 transaction.getType(),
                 transaction.getDate(),
                 transaction.getAmount(),
-                category.getId());
+                category.getId(),
+                transaction.getUsuario());
     }
 
     // GUARDAR TRANSACTION
@@ -78,27 +80,61 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.findByCategoryId(categoryId);
     }
 
-    // ACTUALIZAR TRANSACTION
+    // ACTUALIZAR TRANSACTION SOLO POR EL CREADOR
     public TransactionResponse updateTransaction(Long transactionId, TransactionRequest request) {
-        //Obtenemos la transacción a editar buscando por su id
+        // Obtenemos el usuario logueado
+        UserDetailsImpl currentUser = (UserDetailsImpl) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
         Transaction transactionToEdit = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 
-        // Solo actualizamos nombre e importe. Resto de campos siempre se mantienen
+        // Verificamos que el usuario actual es el dueño
+        if (!transactionToEdit.getUsuario().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("No tienes permiso para editar esta transacción");
+        }
+
+        // Actualizamos solo nombre e importe
         transactionToEdit.setName(request.getName());
         transactionToEdit.setAmount(request.getAmount());
 
-        Transaction saved = transactionRepository.save(transactionToEdit); //Guardamos
+        Transaction saved = transactionRepository.save(transactionToEdit);
 
         return new TransactionResponse(
                 saved.getId(),
                 saved.getName(),
-                saved.getType(), // se mantiene igual
-                saved.getDate(), // se mantiene igual
+                saved.getType(),
+                saved.getDate(),
                 saved.getAmount(),
-                saved.getCategory().getId() // no cambia de categoría
-        );
+                saved.getCategory().getId(),
+                saved.getUsuario());
     }
+
+    // public TransactionResponse updateTransaction(Long transactionId,
+    // TransactionRequest request) {
+    // //Obtenemos la transacción a editar buscando por su id
+    // Transaction transactionToEdit = transactionRepository.findById(transactionId)
+    // .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+    // // Solo actualizamos nombre e importe. Resto de campos siempre se mantienen
+    // transactionToEdit.setName(request.getName());
+    // transactionToEdit.setAmount(request.getAmount());
+
+    // Transaction saved = transactionRepository.save(transactionToEdit);
+    // //Guardamos
+
+    // return new TransactionResponse(
+    // saved.getId(),
+    // saved.getName(),
+    // saved.getType(), // se mantiene igual
+    // saved.getDate(), // se mantiene igual
+    // saved.getAmount(),
+    // saved.getCategory().getId(),
+    // saved.getUsuario()
+    // );
+    // }
 
     // ELIMINAR TRANSACTION
     public void deleteTransaction(Long transactionId) {
