@@ -112,32 +112,23 @@ public class TransactionServiceImpl implements TransactionService {
                 saved.getUsuario());
     }
 
-    // public TransactionResponse updateTransaction(Long transactionId,
-    // TransactionRequest request) {
-    // //Obtenemos la transacción a editar buscando por su id
-    // Transaction transactionToEdit = transactionRepository.findById(transactionId)
-    // .orElseThrow(() -> new RuntimeException("Transaction not found"));
-
-    // // Solo actualizamos nombre e importe. Resto de campos siempre se mantienen
-    // transactionToEdit.setName(request.getName());
-    // transactionToEdit.setAmount(request.getAmount());
-
-    // Transaction saved = transactionRepository.save(transactionToEdit);
-    // //Guardamos
-
-    // return new TransactionResponse(
-    // saved.getId(),
-    // saved.getName(),
-    // saved.getType(), // se mantiene igual
-    // saved.getDate(), // se mantiene igual
-    // saved.getAmount(),
-    // saved.getCategory().getId(),
-    // saved.getUsuario()
-    // );
-    // }
 
     // ELIMINAR TRANSACTION
     public void deleteTransaction(Long transactionId) {
+        // Obtenemos el usuario logueado
+        UserDetailsImpl currentUser = (UserDetailsImpl) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        //Obtenemos transaction a borrar        
+        Transaction transactionToDelete = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        // Verificamos que el usuario actual es el dueño
+        if (!transactionToDelete.getUsuario().getId().equals(currentUser.getId())) {
+            throw new RuntimeException("No tienes permiso para borrar esta transacción");
+        }
         if (!transactionRepository.existsById(transactionId)) {
             throw new RuntimeException("Transaction not found");
         }
