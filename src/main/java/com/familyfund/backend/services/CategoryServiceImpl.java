@@ -15,6 +15,7 @@ import com.familyfund.backend.dto.CategoryResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Transaction;
+import com.familyfund.backend.modelo.TransactionType;
 import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
 import com.familyfund.backend.repositories.TransactionRepository;
@@ -86,6 +87,24 @@ public class CategoryServiceImpl implements CategoryService {
         response.setDeleted(category.isDeleted());
 
         return response;
+    }
+
+    // MÉTODO CALCULAR DIFERENCIA ENTRE INGRESOS Y GASTOS
+    public Double calcularBalanceFamilia(Long familyId) {
+        // Obtenemos la fecha actual
+        LocalDate today = LocalDate.now();
+        int currentMonth = today.getMonthValue();
+        int currentYear = today.getYear();
+
+        // Suma de ingresos solo del mes actual
+        double totalIngresosMes = transactionRepository.sumByFamilyAndTypeAndMonth(
+                familyId, TransactionType.INCOME, currentYear, currentMonth);
+
+        // Suma de todos los gastos (puedes filtrarlo también por mes si quieres)
+        double totalGastos = transactionRepository.sumByFamilyAndTypeAndMonth(
+                familyId, TransactionType.EXPENSE, currentYear, currentMonth);
+
+        return totalIngresosMes - totalGastos;
     }
 
     // <---- MÉTODOS QUE OBVIAN LAS CATEGORÍAS DE deleted = true ---->//

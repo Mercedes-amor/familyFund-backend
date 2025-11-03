@@ -2,7 +2,6 @@ package com.familyfund.backend.scheduler;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import com.familyfund.backend.services.GoalService;
 
 @Component
@@ -22,4 +21,5 @@ public class GoalScheduler {
         goalService.evaluateAllGoals();
         System.out.println("Evaluación de goals completada (incluyendo meses pasados)");
     }
+
 }

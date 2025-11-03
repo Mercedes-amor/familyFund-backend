@@ -156,10 +156,8 @@ public class GoalServiceImpl implements GoalService {
         List<Goal> allGoals = goalRepository.findAll();
 
         for (Goal g : allGoals) {
-            if (g.getAchieved() == null) { // no evaluado aún
-                evaluateGoal(g);
-                goalRepository.save(g);
-            }
+            evaluateGoal(g);
+            goalRepository.save(g);
         }
     }
 
@@ -168,7 +166,7 @@ public class GoalServiceImpl implements GoalService {
     public void evaluateAllFamiliesForMonth(String month) {
         List<Family> families = familyRepository.findAll();
         for (Family family : families) {
-            evaluateGoals(family.getId(), month); //Método que calcula todos los objetivos de una familia y mes
+            evaluateGoals(family.getId(), month); // Método que calcula todos los objetivos de una familia y mes
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.familyfund.backend.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,8 +24,10 @@ import com.familyfund.backend.dto.TransactionResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Transaction;
+import com.familyfund.backend.modelo.TransactionType;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.CategoryRepository;
+import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.security.UserDetailsImpl;
 import com.familyfund.backend.services.CategoryService;
 import com.familyfund.backend.services.FamilyService;
@@ -46,7 +49,8 @@ public class FamilyController {
 
     @Autowired
     TransactionService transactionService;
-
+    @Autowired
+    TransactionRepository transactionRepository;
     @Autowired
     CategoryRepository categoryRepository;
 
@@ -113,15 +117,29 @@ public class FamilyController {
     // OBTENER LAS CATEGORÍAS ACTIVAS DE UNA FAMILIA
     @GetMapping("/{id}/categories")
     public ResponseEntity<List<CategoryResponse>> getFamilyCategories(@PathVariable Long id) {
-        // Obtenemos todas las categorías activas asociadas a la familia
         List<Category> categories = categoryRepository.findByFamily_IdAndDeletedFalse(id);
 
-        // Transformamos cada categoría a DTO usando el mapper del service
+        // Obtenemos el mes y año actual
+        LocalDate today = LocalDate.now();
+        int currentMonth = today.getMonthValue();
+        int currentYear = today.getYear();
+
+        // Calculamos la suma de ingresos solo del mes actual
+        double totalIngresosMes = transactionRepository.sumByFamilyAndTypeAndMonth(
+                id, TransactionType.INCOME, currentYear, currentMonth);
+
+        // Actualizamos el límite dinámico para la categoría "INGRESOS"
+        categories.forEach(cat -> {
+            if ("INGRESOS".equalsIgnoreCase(cat.getName())) {
+                cat.setLimit(totalIngresosMes);
+            }
+        });
+
+        // Transformamos cada categoría a DTO
         List<CategoryResponse> res = categories.stream()
-                .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage y transacciones
+                .map(categoryService::toResponse)
                 .collect(Collectors.toList());
 
-        // Devolvemos la lista de CategoryResponse
         return ResponseEntity.ok(res);
     }
 
