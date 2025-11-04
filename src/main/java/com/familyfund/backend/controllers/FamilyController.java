@@ -59,12 +59,20 @@ public class FamilyController {
 
     // *CREAR FAMILIA*
     @PostMapping("/newfamily")
-    public ResponseEntity<FamilyResponse> createFamily(@RequestBody CreateFamilyRequest request,
+    public ResponseEntity<FamilyResponse> createFamily(
+            @RequestBody CreateFamilyRequest request,
             Authentication authentication) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        Family createdFamily = familyService.createFamily(request.getName(), userDetails.getId());
 
-        return ResponseEntity.ok(new FamilyResponse(createdFamily.getId(), createdFamily.getName(), List.of()));
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        Family createdFamily = familyService.createFamily(
+                request.getName(),
+                userDetails.getId());
+
+        // Usamos el mapper existente para incluir categorías y maxiGoal
+        FamilyResponse response = familyService.getFamilyById(createdFamily.getId());
+
+        return ResponseEntity.ok(response);
     }
 
     // UNIRSE A UNA FAMILIA
@@ -87,25 +95,19 @@ public class FamilyController {
     }
 
     // OBTENER UNA FAMILIA POR ID
-    @GetMapping("/{id}")
-    public ResponseEntity<FamilyResponse> getFamilyById(@PathVariable Long id) {
-        Optional<Family> familyOpt = familyService.findOptionalById(id);
-        if (familyOpt.isEmpty())
-            return ResponseEntity.notFound().build();
+   // OBTENER UNA FAMILIA POR ID
+@GetMapping("/{id}")
+public ResponseEntity<FamilyResponse> getFamilyById(@PathVariable Long id) {
 
-        Family family = familyOpt.get();
+    Optional<Family> familyOpt = familyService.findOptionalById(id);
+    if (familyOpt.isEmpty())
+        return ResponseEntity.notFound().build();
 
-        // Obtenemos todas las categorías asociadas a la familia
-        List<Category> categories = categoryService.findByFamilyId(id);
+    FamilyResponse response = familyService.getFamilyById(id);
 
-        // Transformamos cada categoría a DTO usando el mapper del service
-        List<CategoryResponse> res = categories.stream()
-                .map(categoryService::toResponse) // Incluye totalSpent, remaining, percentage
-                .collect(Collectors.toList());
+    return ResponseEntity.ok(response);
+}
 
-        FamilyResponse response = new FamilyResponse(family.getId(), family.getName(), res);
-        return ResponseEntity.ok(response);
-    }
 
     // OBTENER LOS MIEMBROS DE UNA FAMILIA
     @GetMapping("/{id}/members")
@@ -172,8 +174,7 @@ public class FamilyController {
     }
 
     // MAXIGOALS - AHORRO
-
-    //Crear nuevo MaxiGoal
+    // Crear nuevo MaxiGoal
     @PostMapping("/{familyId}/maxigoal")
     public ResponseEntity<MaxiGoal> createMaxiGoal(
             @PathVariable Long familyId,
@@ -181,7 +182,7 @@ public class FamilyController {
         return ResponseEntity.ok(maxiGoalService.create(familyId, maxiGoal));
     }
 
-    //Añadir cantidad ahorrada
+    // Añadir cantidad ahorrada
     @PostMapping("maxigoal/{id}/add-saving")
     public ResponseEntity<?> addSaving(
             @PathVariable Long id,

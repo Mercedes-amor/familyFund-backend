@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.familyfund.backend.dto.CategoryResponse;
 import com.familyfund.backend.dto.FamilyResponse;
+import com.familyfund.backend.dto.MaxiGoalResponse;
 import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
@@ -50,7 +51,7 @@ public class FamilyServiceImpl implements FamilyService {
             throw new RuntimeException("Usuario no encontrado");
         }
 
-        //Código aleatorio para unirse a familia
+        // Código aleatorio para unirse a familia
         String generatedCode = UUID.randomUUID().toString().substring(0, 6);
 
         // Crear familia
@@ -93,13 +94,27 @@ public class FamilyServiceImpl implements FamilyService {
         Family family = familyRepository.findById(familyId)
                 .orElseThrow(() -> new RuntimeException("Familia no encontrada"));
 
-        // Transformar categorías en CategoryResponse usando el método del
-        // CategoryService
+        // Transformar categorías en CategoryResponse usando CategoryService
         List<CategoryResponse> categories = family.getCategories().stream()
                 .map(categoryService::toResponse)
                 .toList();
 
-        return new FamilyResponse(family.getId(), family.getName(), categories);
+        // Buscar el MaxiGoal activo 
+        MaxiGoalResponse maxiGoalResponse = maxiGoalRepository
+                .findByFamilyIdAndAchievedFalse(familyId)
+                .map(g -> new MaxiGoalResponse(
+                        g.getId(),
+                        g.getName(),
+                        g.getTargetAmount(),
+                        g.getActualSave(),
+                        g.getAchieved()))
+                .orElse(null);
+
+        return new FamilyResponse(
+                family.getId(),
+                family.getName(),
+                categories,
+                maxiGoalResponse);
     }
 
     // Crear y guardar Familia
