@@ -14,9 +14,11 @@ import com.familyfund.backend.dto.FamilyResponse;
 import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
+import com.familyfund.backend.modelo.MaxiGoal;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
+import com.familyfund.backend.repositories.MaxiGoalRepository;
 import com.familyfund.backend.repositories.UsuarioRepository;
 
 @Service
@@ -28,6 +30,8 @@ public class FamilyServiceImpl implements FamilyService {
     UsuarioRepository usuarioRepository;
     @Autowired
     CategoryRepository categoryRepository;
+    @Autowired
+    MaxiGoalRepository maxiGoalRepository;
 
     @Autowired
     UsuarioService usuarioService;
@@ -46,9 +50,10 @@ public class FamilyServiceImpl implements FamilyService {
             throw new RuntimeException("Usuario no encontrado");
         }
 
+        //Código aleatorio para unirse a familia
         String generatedCode = UUID.randomUUID().toString().substring(0, 6);
 
-        // Creamos la familia
+        // Crear familia
         Family family = Family.builder()
                 .name(name)
                 .code(generatedCode)
@@ -56,7 +61,7 @@ public class FamilyServiceImpl implements FamilyService {
                 .categories(new ArrayList<>())
                 .build();
 
-        // Añadimos el usuario y ligamos
+        // Relación usuario ↔ familia
         family.getUsuarios().add(usuario);
         usuario.setFamily(family);
 
@@ -66,10 +71,20 @@ public class FamilyServiceImpl implements FamilyService {
         ingresosCategory.setFamily(family);
         family.getCategories().add(ingresosCategory);
 
-        // Guardamos la familia; cascada se encargará de usuarios y categorías
-        familyRepository.save(family);
+        // Guardar la familia para obtener ID
+        Family savedFamily = familyRepository.save(family);
 
-        return family;
+        // Crear MaxiGoal automáticamente con el familyId
+        MaxiGoal maxigoal = new MaxiGoal();
+        maxigoal.setName("MaxiGoal inicial");
+        maxigoal.setTargetAmount(1000.0);
+        maxigoal.setActualSave(0.0);
+        maxigoal.setAchieved(false);
+        maxigoal.setFamily(savedFamily);
+
+        maxiGoalRepository.save(maxigoal);
+
+        return savedFamily;
     }
 
     // Obtener DTO de Familia por Id
@@ -118,7 +133,7 @@ public class FamilyServiceImpl implements FamilyService {
 
     // Borrar por id
     @Override
-    @Transactional //asegura que la operación se ejecute dentro de la transacción.
+    @Transactional // asegura que la operación se ejecute dentro de la transacción.
     public void deleteById(Long id) {
         // 1. Desvinculamos usuarios
         usuarioRepository.findByFamily_Id(id).forEach(user -> user.setFamily(null));

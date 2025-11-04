@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.familyfund.backend.dto.CategoryResponse;
@@ -23,6 +24,7 @@ import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.dto.TransactionResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
+import com.familyfund.backend.modelo.MaxiGoal;
 import com.familyfund.backend.modelo.Transaction;
 import com.familyfund.backend.modelo.TransactionType;
 import com.familyfund.backend.modelo.Usuario;
@@ -31,6 +33,7 @@ import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.security.UserDetailsImpl;
 import com.familyfund.backend.services.CategoryService;
 import com.familyfund.backend.services.FamilyService;
+import com.familyfund.backend.services.MaxiGoalService;
 import com.familyfund.backend.services.TransactionService;
 import com.familyfund.backend.services.UsuarioService;
 
@@ -40,12 +43,12 @@ public class FamilyController {
 
     @Autowired
     FamilyService familyService;
-
     @Autowired
     UsuarioService usuarioService;
-
     @Autowired
     CategoryService categoryService;
+    @Autowired
+    MaxiGoalService maxiGoalService;
 
     @Autowired
     TransactionService transactionService;
@@ -167,4 +170,24 @@ public class FamilyController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(res);
     }
+
+    // MAXIGOALS - AHORRO
+
+    //Crear nuevo MaxiGoal
+    @PostMapping("/{familyId}/maxigoal")
+    public ResponseEntity<MaxiGoal> createMaxiGoal(
+            @PathVariable Long familyId,
+            @RequestBody MaxiGoal maxiGoal) {
+        return ResponseEntity.ok(maxiGoalService.create(familyId, maxiGoal));
+    }
+
+    //Añadir cantidad ahorrada
+    @PostMapping("maxigoal/{id}/add-saving")
+    public ResponseEntity<?> addSaving(
+            @PathVariable Long id,
+            @RequestParam Double amount) {
+        maxiGoalService.addSaving(id, amount);
+        return ResponseEntity.ok("Amount added to MaxiGoal");
+    }
+
 }
