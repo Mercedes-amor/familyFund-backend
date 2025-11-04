@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.familyfund.backend.dto.UpdateMaxiGoalRequest;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.MaxiGoal;
 import com.familyfund.backend.repositories.FamilyRepository;
@@ -79,6 +80,19 @@ public class MaxiGoalServiceImpl implements MaxiGoalService {
         maxiGoal.setActualSave(0.0);
 
         return maxiGoalRepository.save(maxiGoal);
+    }
+
+    // UPDATE MAXIGOAL
+    public MaxiGoal updateMaxiGoal(Long id, UpdateMaxiGoalRequest dto) {
+        MaxiGoal existing = maxiGoalRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("MaxiGoal no encontrado"));
+
+        if (dto.getName() != null)
+            existing.setName(dto.getName());
+        if (dto.getTargetAmount() != null)
+            existing.setTargetAmount(dto.getTargetAmount());
+
+        return maxiGoalRepository.save(existing);
     }
 
 }

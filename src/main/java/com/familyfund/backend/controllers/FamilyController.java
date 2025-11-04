@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,7 @@ import com.familyfund.backend.dto.FamilyResponse;
 import com.familyfund.backend.dto.JoinFamilyRequest;
 import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.dto.TransactionResponse;
+import com.familyfund.backend.dto.UpdateMaxiGoalRequest;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.MaxiGoal;
@@ -95,19 +97,17 @@ public class FamilyController {
     }
 
     // OBTENER UNA FAMILIA POR ID
-   // OBTENER UNA FAMILIA POR ID
-@GetMapping("/{id}")
-public ResponseEntity<FamilyResponse> getFamilyById(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<FamilyResponse> getFamilyById(@PathVariable Long id) {
 
-    Optional<Family> familyOpt = familyService.findOptionalById(id);
-    if (familyOpt.isEmpty())
-        return ResponseEntity.notFound().build();
+        Optional<Family> familyOpt = familyService.findOptionalById(id);
+        if (familyOpt.isEmpty())
+            return ResponseEntity.notFound().build();
 
-    FamilyResponse response = familyService.getFamilyById(id);
+        FamilyResponse response = familyService.getFamilyById(id);
 
-    return ResponseEntity.ok(response);
-}
-
+        return ResponseEntity.ok(response);
+    }
 
     // OBTENER LOS MIEMBROS DE UNA FAMILIA
     @GetMapping("/{id}/members")
@@ -180,6 +180,16 @@ public ResponseEntity<FamilyResponse> getFamilyById(@PathVariable Long id) {
             @PathVariable Long familyId,
             @RequestBody MaxiGoal maxiGoal) {
         return ResponseEntity.ok(maxiGoalService.create(familyId, maxiGoal));
+    }
+
+    // Actualizar un MaxiGoal existente
+    @PutMapping("maxigoal/{id}")
+    public ResponseEntity<MaxiGoal> updateMaxiGoal(
+            @PathVariable Long id,
+            @RequestBody UpdateMaxiGoalRequest dto) {
+
+        MaxiGoal saved = maxiGoalService.updateMaxiGoal(id, dto);
+        return ResponseEntity.ok(saved);
     }
 
     // Añadir cantidad ahorrada

@@ -67,9 +67,12 @@ public class FamilyServiceImpl implements FamilyService {
         usuario.setFamily(family);
 
         // Crear categoría INGRESOS automáticamente
-        Category ingresosCategory = new Category();
-        ingresosCategory.setName("INGRESOS");
-        ingresosCategory.setFamily(family);
+        Category ingresosCategory = Category.builder()
+                .name("INGRESOS")
+                .family(family)
+                .transactions(new ArrayList<>()) // EVitamos el null
+                .build();
+
         family.getCategories().add(ingresosCategory);
 
         // Guardar la familia para obtener ID
@@ -99,7 +102,7 @@ public class FamilyServiceImpl implements FamilyService {
                 .map(categoryService::toResponse)
                 .toList();
 
-        // Buscar el MaxiGoal activo 
+        // Buscar el MaxiGoal activo
         MaxiGoalResponse maxiGoalResponse = maxiGoalRepository
                 .findByFamilyIdAndAchievedFalse(familyId)
                 .map(g -> new MaxiGoalResponse(
