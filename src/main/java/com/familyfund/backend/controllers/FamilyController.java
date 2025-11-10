@@ -196,9 +196,11 @@ public class FamilyController {
     @PostMapping("maxigoal/{id}/add-saving")
     public ResponseEntity<?> addSaving(
             @PathVariable Long id,
-            @RequestParam Double amount) {
+            @RequestParam Double amount,
+            Authentication authentication) {
+
         maxiGoalService.addSaving(id, amount);
-        return ResponseEntity.ok("Amount added to MaxiGoal");
+        return ResponseEntity.ok("Saving added");
     }
 
 }

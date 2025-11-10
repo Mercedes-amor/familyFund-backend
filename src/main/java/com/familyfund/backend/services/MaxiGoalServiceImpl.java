@@ -1,16 +1,23 @@
 package com.familyfund.backend.services;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.familyfund.backend.dto.UpdateMaxiGoalRequest;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.MaxiGoal;
+import com.familyfund.backend.modelo.MaxiGoalSaving;
+import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.FamilyRepository;
 import com.familyfund.backend.repositories.MaxiGoalRepository;
+import com.familyfund.backend.repositories.MaxiGoalSavingRepository;
+import com.familyfund.backend.repositories.UsuarioRepository;
 
 @Service
 public class MaxiGoalServiceImpl implements MaxiGoalService {
@@ -19,7 +26,12 @@ public class MaxiGoalServiceImpl implements MaxiGoalService {
     CategoryService categoryService;
 
     @Autowired
+    UsuarioRepository usuarioRepository;
+
+    @Autowired
     MaxiGoalRepository maxiGoalRepository;
+    @Autowired
+    MaxiGoalSavingRepository maxiGoalSavingRepository;
 
     @Autowired
     FamilyRepository familyRepository;
@@ -31,15 +43,32 @@ public class MaxiGoalServiceImpl implements MaxiGoalService {
         MaxiGoal maxiGoal = maxiGoalRepository.findById(maxiGoalId)
                 .orElseThrow(() -> new RuntimeException("MaxiGoal not found"));
 
+        
+        // Obtener usuario autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        Usuario usuario = usuarioRepository.findByEmail(username);
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+
+        // registrar aporte individual
+        MaxiGoalSaving saving = new MaxiGoalSaving();
+        saving.setAmount(amount);
+        saving.setMaxiGoal(maxiGoal);
+        saving.setUsuario(usuario);
+        saving.setCreatedAt(LocalDate.now());
+        maxiGoalSavingRepository.save(saving);
+
+        // actualizar total en MaxiGoal
         maxiGoal.setActualSave(maxiGoal.getActualSave() + amount);
 
-        // Comprobamos si se alcanzó el objetivo, en tal caso creamos nuevo MaxiGoal
         if (maxiGoal.getActualSave() >= maxiGoal.getTargetAmount()) {
             maxiGoal.setAchieved(true);
             maxiGoalRepository.save(maxiGoal);
 
             MaxiGoal newGoal = new MaxiGoal();
-            newGoal.setName("Nuevo objetivo"); // luego el usuario lo cambia si quiere
+            newGoal.setName("Nuevo objetivo");
             newGoal.setTargetAmount(1000.0);
             newGoal.setActualSave(0.0);
             newGoal.setAchieved(false);
