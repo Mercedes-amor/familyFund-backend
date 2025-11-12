@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.familyfund.backend.dto.CategoryResponse;
 import com.familyfund.backend.dto.FamilyResponse;
 import com.familyfund.backend.dto.MaxiGoalResponse;
+import com.familyfund.backend.dto.MaxiGoalSavingResponse;
 import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
@@ -110,7 +111,11 @@ public class FamilyServiceImpl implements FamilyService {
                         g.getName(),
                         g.getTargetAmount(),
                         g.getActualSave(),
-                        g.getAchieved()))
+                        g.getAchieved(),
+                        g.getSavings() != null ? g.getSavings().stream()
+                                .map(s -> new MaxiGoalSavingResponse(s.getId(), s.getAmount(), s.getCreatedAt()))
+                                .toList()
+                                : List.of()))
                 .orElse(null);
 
         return new FamilyResponse(
