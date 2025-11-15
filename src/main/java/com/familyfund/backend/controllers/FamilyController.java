@@ -2,10 +2,12 @@ package com.familyfund.backend.controllers;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,12 +23,14 @@ import com.familyfund.backend.dto.CategoryResponse;
 import com.familyfund.backend.dto.CreateFamilyRequest;
 import com.familyfund.backend.dto.FamilyResponse;
 import com.familyfund.backend.dto.JoinFamilyRequest;
+import com.familyfund.backend.dto.MaxiGoalSavingResponse;
 import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.dto.TransactionResponse;
 import com.familyfund.backend.dto.UpdateMaxiGoalRequest;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.MaxiGoal;
+import com.familyfund.backend.modelo.MaxiGoalSaving;
 import com.familyfund.backend.modelo.Transaction;
 import com.familyfund.backend.modelo.TransactionType;
 import com.familyfund.backend.modelo.Usuario;
@@ -192,7 +196,29 @@ public class FamilyController {
         return ResponseEntity.ok(saved);
     }
 
-    // Añadir cantidad ahorrada
+    // ---SAVINGS DE MAXIGOAL--
+
+    // Obtener Savings de MaxiGoal
+    @GetMapping("/maxigoal/{maxiGoalId}/savings")
+    public ResponseEntity<List<MaxiGoalSavingResponse>> getAllSavings(
+            @PathVariable Long maxiGoalId) {
+
+        try {
+            List<MaxiGoalSaving> savings = maxiGoalService.getAllSavings(maxiGoalId);
+
+            // Convertir a Response
+            List<MaxiGoalSavingResponse> response = savings.stream()
+                    .map(maxiGoalService::toResponse)
+                    .toList();
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // Añadir saving por usuario
     @PostMapping("maxigoal/{id}/add-saving")
     public ResponseEntity<?> addSaving(
             @PathVariable Long id,
@@ -201,6 +227,24 @@ public class FamilyController {
 
         maxiGoalService.addSaving(id, amount);
         return ResponseEntity.ok("Saving added");
+    }
+
+    // Añadir saving automático (de Sistema)
+    @PostMapping("/maxigoal/{maxiGoalId}/system-saving")
+    public ResponseEntity<MaxiGoalSavingResponse> addSystemSaving(
+            @PathVariable Long maxiGoalId,
+            @RequestBody Map<String, Object> body) {
+
+        double amount = ((Number) body.get("amount")).doubleValue();
+
+        try {
+            MaxiGoalSaving saving = maxiGoalService.createSystemSaving(maxiGoalId, amount);
+            MaxiGoalSavingResponse response = maxiGoalService.toResponse(saving);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }

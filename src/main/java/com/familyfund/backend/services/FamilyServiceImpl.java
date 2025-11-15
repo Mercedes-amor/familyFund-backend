@@ -105,18 +105,29 @@ public class FamilyServiceImpl implements FamilyService {
 
         // Buscar el MaxiGoal activo
         MaxiGoalResponse maxiGoalResponse = maxiGoalRepository
-                .findByFamilyIdAndAchievedFalse(familyId)
-                .map(g -> new MaxiGoalResponse(
-                        g.getId(),
-                        g.getName(),
-                        g.getTargetAmount(),
-                        g.getActualSave(),
-                        g.getAchieved(),
-                        g.getSavings() != null ? g.getSavings().stream()
-                                .map(s -> new MaxiGoalSavingResponse(s.getId(), s.getAmount(), s.getCreatedAt()))
-                                .toList()
-                                : List.of()))
-                .orElse(null);
+        .findByFamilyIdAndAchievedFalse(familyId)
+        .map(g -> new MaxiGoalResponse(
+                g.getId(),
+                g.getName(),
+                g.getTargetAmount(),
+                g.getActualSave(),
+                g.getAchieved(),
+                g.getSavings() != null
+                        ? g.getSavings().stream()
+                            .map(s -> new MaxiGoalSavingResponse(
+                                    s.getId(),
+                                    s.getAmount(),
+                                    s.getCreatedAt(),
+                                    s.getUsuario() != null ? s.getUsuario().getId() : null,
+                                    s.getUsuario() != null ? s.getUsuario().getNombre() : null,
+                                    s.getUsuario() != null ? s.getUsuario().getPhotoUrl() : null,
+                                    s.isSystem()
+                            ))
+                            .toList()
+                        : List.of()
+        ))
+        .orElse(null);
+
 
         return new FamilyResponse(
                 family.getId(),

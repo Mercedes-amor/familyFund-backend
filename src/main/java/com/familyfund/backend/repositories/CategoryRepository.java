@@ -28,4 +28,19 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("DELETE FROM Category c WHERE c.family.id = :familyId")
     void deleteByFamilyId(@Param("familyId") Long familyId);
 
+    // Suma de transacciones por tipo (INCOME/EXPENSE) para una familia y mes
+    @Query("""
+                SELECT COALESCE(SUM(t.amount), 0)
+                FROM Category c
+                JOIN c.transactions t
+                WHERE c.family.id = :familyId
+                  AND t.type = :type
+                  AND FUNCTION('YEAR', t.date) = :year
+                  AND FUNCTION('MONTH', t.date) = :month
+            """)
+    Double sumTransactionsByFamilyAndTypeAndMonth(
+            @Param("familyId") Long familyId,
+            @Param("type") String type,
+            @Param("year") int year,
+            @Param("month") int month);
 }

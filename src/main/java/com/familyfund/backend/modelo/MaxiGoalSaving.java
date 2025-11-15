@@ -2,7 +2,6 @@ package com.familyfund.backend.modelo;
 
 import java.time.LocalDate;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,7 +22,7 @@ public class MaxiGoalSaving {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @NotNull(message = "amount cannot be null")
     private Double amount;
 
@@ -36,4 +35,7 @@ public class MaxiGoalSaving {
     private MaxiGoal maxiGoal;
 
     private LocalDate createdAt;
+
+    private boolean system = false;
+
 }
