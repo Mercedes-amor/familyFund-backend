@@ -144,6 +144,11 @@ public class MaxiGoalServiceImpl implements MaxiGoalService {
         return maxiGoalSavingRepository.findByMaxiGoalId(id);
     }
 
+      // OBTENER TODOS LOS SAVINGS DE UNA FAMILIA
+    public List<MaxiGoalSaving> getAllSavingsbyFamily(Long familyId) {
+        return maxiGoalSavingRepository.findAllByFamilyIdOrderByCreatedAtDesc(familyId);
+    }
+
     // CONVERTIR A RESPONSE
     public MaxiGoalSavingResponse toResponse(MaxiGoalSaving saving) {
 

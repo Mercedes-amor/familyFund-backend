@@ -19,6 +19,8 @@ public interface MaxiGoalService {
 
     public List<MaxiGoalSaving> getAllSavings(Long id);
 
+    public List<MaxiGoalSaving> getAllSavingsbyFamily(Long familyId);
+
     public MaxiGoalSavingResponse toResponse(MaxiGoalSaving saving);
 
     public MaxiGoal create(Long familyId, MaxiGoal maxiGoal);

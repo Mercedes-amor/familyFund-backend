@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -198,9 +197,9 @@ public class FamilyController {
 
     // ---SAVINGS DE MAXIGOAL--
 
-    // Obtener Savings de MaxiGoal
+    // Obtener Savings de un MaxiGoal por su id
     @GetMapping("/maxigoal/{maxiGoalId}/savings")
-    public ResponseEntity<List<MaxiGoalSavingResponse>> getAllSavings(
+    public ResponseEntity<List<MaxiGoalSavingResponse>> getAllSavingsByMaxigoal(
             @PathVariable Long maxiGoalId) {
 
         try {
@@ -218,6 +217,26 @@ public class FamilyController {
         }
     }
 
+
+    // Obtener Savings de todos los maxigoals de una familia por su id
+    @GetMapping("/{familyId}/savings")
+    public ResponseEntity<List<MaxiGoalSavingResponse>> getAllSavingsByFamily(
+            @PathVariable Long familyId) {
+
+        try {
+            List<MaxiGoalSaving> savings = maxiGoalService.getAllSavingsbyFamily(familyId);
+
+            // Convertir a Response
+            List<MaxiGoalSavingResponse> response = savings.stream()
+                    .map(maxiGoalService::toResponse)
+                    .toList();
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
     // Añadir saving por usuario
     @PostMapping("maxigoal/{id}/add-saving")
     public ResponseEntity<?> addSaving(

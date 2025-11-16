@@ -33,7 +33,7 @@ public class Usuario {
     @Column(nullable = true, length = 100)
     private Integer edad;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(nullable = false)
