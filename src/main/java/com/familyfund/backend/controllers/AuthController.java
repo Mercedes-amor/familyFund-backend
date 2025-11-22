@@ -15,12 +15,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
 
 import com.familyfund.backend.dto.JwtResponseDto;
 import com.familyfund.backend.dto.LoginDto;
 import com.familyfund.backend.dto.MessageResponse;
 import com.familyfund.backend.dto.SignupDto;
 import com.familyfund.backend.dto.UsuarioDto;
+import com.familyfund.backend.dto.UsuarioNameDto;
 import com.familyfund.backend.modelo.Rol;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.UsuarioRepository;
@@ -120,4 +122,20 @@ public class AuthController {
         return ResponseEntity
                 .ok(new UsuarioDto(u.getId(), u.getNombre(), u.getEmail(), u.getFamily(), u.getPhotoUrl()));
     }
+
+    // UPDATE USER
+    @PostMapping(path = "/user/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UsuarioDto> updateUser(
+            @PathVariable Long id,
+            @RequestBody UsuarioNameDto dto) {
+
+        Usuario userToUpdate = usuarioRepository.findById(id).orElse(null);
+        if (userToUpdate == null)
+            return ResponseEntity.notFound().build();
+
+        userToUpdate.setNombre(dto.getName());
+        Usuario updatedUser = usuarioService.save(userToUpdate);
+        return ResponseEntity.ok(usuarioService.toDto(updatedUser));
+    }
+
 }

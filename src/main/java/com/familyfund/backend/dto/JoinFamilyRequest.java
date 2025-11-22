@@ -7,6 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class JoinFamilyRequest {
     private Long userId;
-    private Long familyId;
+    private String familyCode;
 }
 

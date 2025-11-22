@@ -112,7 +112,6 @@ public class TransactionServiceImpl implements TransactionService {
                 saved.getUsuario());
     }
 
-
     // ELIMINAR TRANSACTION
     public void deleteTransaction(Long transactionId) {
         // Obtenemos el usuario logueado
@@ -121,7 +120,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .getAuthentication()
                 .getPrincipal();
 
-        //Obtenemos transaction a borrar        
+        // Obtenemos transaction a borrar
         Transaction transactionToDelete = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found"));
 

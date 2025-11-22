@@ -8,4 +8,6 @@ import com.familyfund.backend.modelo.Family;
 @Repository
 public interface FamilyRepository extends JpaRepository<Family, Long> {
     //  Métodos personalizados si procede
+
+    Family findByCode(String code);
 }

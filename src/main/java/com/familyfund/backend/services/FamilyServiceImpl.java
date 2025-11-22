@@ -17,6 +17,7 @@ import com.familyfund.backend.dto.MemberResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.MaxiGoal;
+import com.familyfund.backend.modelo.Transaction;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
@@ -105,29 +106,26 @@ public class FamilyServiceImpl implements FamilyService {
 
         // Buscar el MaxiGoal activo
         MaxiGoalResponse maxiGoalResponse = maxiGoalRepository
-        .findByFamilyIdAndAchievedFalse(familyId)
-        .map(g -> new MaxiGoalResponse(
-                g.getId(),
-                g.getName(),
-                g.getTargetAmount(),
-                g.getActualSave(),
-                g.getAchieved(),
-                g.getSavings() != null
-                        ? g.getSavings().stream()
-                            .map(s -> new MaxiGoalSavingResponse(
-                                    s.getId(),
-                                    s.getAmount(),
-                                    s.getCreatedAt(),
-                                    s.getUsuario() != null ? s.getUsuario().getId() : null,
-                                    s.getUsuario() != null ? s.getUsuario().getNombre() : null,
-                                    s.getUsuario() != null ? s.getUsuario().getPhotoUrl() : null,
-                                    s.isSystem()
-                            ))
-                            .toList()
-                        : List.of()
-        ))
-        .orElse(null);
-
+                .findByFamilyIdAndAchievedFalse(familyId)
+                .map(g -> new MaxiGoalResponse(
+                        g.getId(),
+                        g.getName(),
+                        g.getTargetAmount(),
+                        g.getActualSave(),
+                        g.getAchieved(),
+                        g.getSavings() != null
+                                ? g.getSavings().stream()
+                                        .map(s -> new MaxiGoalSavingResponse(
+                                                s.getId(),
+                                                s.getAmount(),
+                                                s.getCreatedAt(),
+                                                s.getUsuario() != null ? s.getUsuario().getId() : null,
+                                                s.getUsuario() != null ? s.getUsuario().getNombre() : null,
+                                                s.getUsuario() != null ? s.getUsuario().getPhotoUrl() : null,
+                                                s.isSystem()))
+                                        .toList()
+                                : List.of()))
+                .orElse(null);
 
         return new FamilyResponse(
                 family.getId(),
@@ -148,6 +146,42 @@ public class FamilyServiceImpl implements FamilyService {
         return familyRepository.findAll();
     }
 
+    // Convertir a dto
+    public FamilyResponse toFamilyResponse(Family family) {
+        List<CategoryResponse> categories = family.getCategories()
+                .stream()
+                .map(cat -> {
+                    CategoryResponse catResp = new CategoryResponse();
+                    catResp.setId(cat.getId());
+                    catResp.setName(cat.getName());
+
+                    // Si limit es null, usar 0
+                    double limit = cat.getLimit() != null ? cat.getLimit() : 0.0;
+                    catResp.setLimit(limit);
+
+                    double totalSpent = cat.getTransactions()
+                            .stream()
+                            .mapToDouble(Transaction::getAmount)
+                            .sum();
+                    catResp.setTotalSpent(totalSpent);
+
+                    catResp.setRemaining(limit - totalSpent);
+                    catResp.setPercentage(limit > 0 ? (totalSpent / cat.getLimit()) * 100 : 0.0);
+                    catResp.setDeleted(false);
+
+                    return catResp;
+                })
+                .toList();
+
+        MaxiGoalResponse maxiGoal = null;
+
+        return new FamilyResponse(
+                family.getId(),
+                family.getName(),
+                categories,
+                maxiGoal);
+    }
+
     // Obtener DTO miembros familia
     public List<MemberResponse> getMembersByFamilyId(Long familyId) {
         Family family = familyRepository.findById(familyId)
@@ -162,7 +196,13 @@ public class FamilyServiceImpl implements FamilyService {
     @Override
     public Family findById(Long id) {
         Optional<Family> family = familyRepository.findById(id);
-        return family.orElse(null); // orElse??
+        return family.orElse(null);
+    }
+
+    // Encontrar por código
+    @Override
+    public Family findByCode(String code) {
+        return familyRepository.findByCode(code);
     }
 
     // Borrar por id

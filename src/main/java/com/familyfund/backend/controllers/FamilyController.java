@@ -1,5 +1,6 @@
 package com.familyfund.backend.controllers;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +8,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +40,7 @@ import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.TransactionRepository;
 import com.familyfund.backend.security.UserDetailsImpl;
 import com.familyfund.backend.services.CategoryService;
+import com.familyfund.backend.services.ExcelService;
 import com.familyfund.backend.services.FamilyService;
 import com.familyfund.backend.services.MaxiGoalService;
 import com.familyfund.backend.services.TransactionService;
@@ -54,6 +58,8 @@ public class FamilyController {
     CategoryService categoryService;
     @Autowired
     MaxiGoalService maxiGoalService;
+    @Autowired
+    ExcelService excelService;
 
     @Autowired
     TransactionService transactionService;
@@ -62,7 +68,9 @@ public class FamilyController {
     @Autowired
     CategoryRepository categoryRepository;
 
-    // *CREAR FAMILIA*
+    // -------FAMILIA-------
+
+    // CREAR FAMILIA
     @PostMapping("/newfamily")
     public ResponseEntity<FamilyResponse> createFamily(
             @RequestBody CreateFamilyRequest request,
@@ -80,11 +88,11 @@ public class FamilyController {
         return ResponseEntity.ok(response);
     }
 
-    // UNIRSE A UNA FAMILIA
+    // UNIRSE A UNA FAMILIA POR CÓDIGO
     @PostMapping("/join")
     public ResponseEntity<FamilyResponse> joinFamily(@RequestBody JoinFamilyRequest request) {
         Usuario usuario = usuarioService.findById(request.getUserId());
-        Family family = familyService.findById(request.getFamilyId());
+        Family family = familyService.findByCode(request.getFamilyCode());
 
         if (usuario == null || family == null) {
             return ResponseEntity.badRequest().build();
@@ -95,7 +103,8 @@ public class FamilyController {
         usuarioService.save(usuario);
 
         // Transformamos la familia a DTO
-        FamilyResponse response = familyService.getFamilyById(family.getId());
+        FamilyResponse response = familyService.toFamilyResponse(family);
+
         return ResponseEntity.ok(response);
     }
 
@@ -176,8 +185,9 @@ public class FamilyController {
         return ResponseEntity.ok(res);
     }
 
-    // MAXIGOALS - AHORRO
-    // Crear nuevo MaxiGoal
+    // ----------MAXIGOALS - AHORRO--------
+
+    // CREAR NUEVO MAXIGOAL
     @PostMapping("/{familyId}/maxigoal")
     public ResponseEntity<MaxiGoal> createMaxiGoal(
             @PathVariable Long familyId,
@@ -185,7 +195,7 @@ public class FamilyController {
         return ResponseEntity.ok(maxiGoalService.create(familyId, maxiGoal));
     }
 
-    // Actualizar un MaxiGoal existente
+    // UPDATE MAXIGOAL
     @PutMapping("maxigoal/{id}")
     public ResponseEntity<MaxiGoal> updateMaxiGoal(
             @PathVariable Long id,
@@ -195,9 +205,9 @@ public class FamilyController {
         return ResponseEntity.ok(saved);
     }
 
-    // ---SAVINGS DE MAXIGOAL--
+    // -------SAVINGS DE MAXIGOAL--------
 
-    // Obtener Savings de un MaxiGoal por su id
+    // OBTENER SAVINGS POR MAXIGOAL ID
     @GetMapping("/maxigoal/{maxiGoalId}/savings")
     public ResponseEntity<List<MaxiGoalSavingResponse>> getAllSavingsByMaxigoal(
             @PathVariable Long maxiGoalId) {
@@ -217,8 +227,7 @@ public class FamilyController {
         }
     }
 
-
-    // Obtener Savings de todos los maxigoals de una familia por su id
+    // OBTENER SAVINGS DE TODOS LOS MAXIGOAL POR FAMILY ID
     @GetMapping("/{familyId}/savings")
     public ResponseEntity<List<MaxiGoalSavingResponse>> getAllSavingsByFamily(
             @PathVariable Long familyId) {
@@ -237,7 +246,8 @@ public class FamilyController {
             return ResponseEntity.badRequest().build();
         }
     }
-    // Añadir saving por usuario
+
+    // ADD SAVING POR USUARIO
     @PostMapping("maxigoal/{id}/add-saving")
     public ResponseEntity<?> addSaving(
             @PathVariable Long id,
@@ -248,7 +258,7 @@ public class FamilyController {
         return ResponseEntity.ok("Saving added");
     }
 
-    // Añadir saving automático (de Sistema)
+    // ADD SAVING AUTOMÁTICO (de Sistema)
     @PostMapping("/maxigoal/{maxiGoalId}/system-saving")
     public ResponseEntity<MaxiGoalSavingResponse> addSystemSaving(
             @PathVariable Long maxiGoalId,
@@ -264,6 +274,26 @@ public class FamilyController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    // -------- GENERAR EXCEL---------
+    @GetMapping("/{familyId}/export/full-excel")
+    public ResponseEntity<byte[]> exportFullExcel(@PathVariable Long familyId) throws IOException {
+
+        List<Category> categories = categoryService.findByFamilyId(familyId);
+        List<Transaction> transactions = transactionService.findByFamilyId(familyId);
+        List<MaxiGoal> goals = maxiGoalService.getAllGoalsByFamily(familyId);
+        List<MaxiGoalSaving> savings = maxiGoalService.getAllSavingsbyFamily(familyId);
+
+        byte[] excel = excelService.generateFullExcel(categories, transactions, goals, savings);
+
+        return ResponseEntity.ok()
+        //Indica al navegador que no muestre el contenido, si no que lo descargue como archivo
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=FamilyExport.xlsx")
+                //Definimos el tipo MIME del archivo
+                .contentType(
+                        MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excel);
     }
 
 }
