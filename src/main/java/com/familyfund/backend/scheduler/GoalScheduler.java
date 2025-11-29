@@ -21,16 +21,14 @@ public class GoalScheduler {
 
     // Evaluar los goals
     @Scheduled(cron = "0 59 23 L * ?")
-    public void autoEvaluateGoals() {
+    public void autoMonthlyProcess() {
+        //Primero evaluamos los mini objetivos que registrarán los gastos correspondientes si fueron cumplidos
         goalService.evaluateAllGoals();
-        System.out.println("Evaluación de goals completada (incluyendo meses pasados)");
-    }
+        System.out.println("Evaluación de goals completada");
 
-    // Evaluar MaxiGoal
-    @Scheduled(cron = "0 59 23 L * ?")
-    public void autoAddRemainingToMaxiGoal() {
+        //Luego con los fondos restantes se calcula el ahorro y se añade a MaxiGoal
         maxiGoalService.addRemainingToMaxiGoal();
-        System.out.println("Ahorro de sistema añadido al MaxiGoal si había restante positivo");
+        System.out.println("Ahorro de sistema añadido");
     }
 
 }

@@ -84,7 +84,7 @@ public class CategoryController {
         List<Transaction> transactions = transactionService.findByCategoryId(id);
         List<TransactionResponse> response = transactions.stream()
                 .map(tx -> new TransactionResponse(tx.getId(), tx.getName(), tx.getType(), tx.getDate(), tx.getAmount(),
-                        tx.getCategory().getId(), tx.getUsuario()))
+                        tx.getCategory().getId(), tx.getUsuario(), tx.isSystem()))
                 .toList();
         return ResponseEntity.ok(response);
     }

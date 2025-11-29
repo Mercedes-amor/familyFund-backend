@@ -35,6 +35,8 @@ public class Transaction {
     private Integer month;
     private int year;
 
+    private boolean system = false;
+
     @NotNull(message = "Amount cannot be null")
     @Positive(message = "Amount must be positive")
     private Double amount;
@@ -46,8 +48,6 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
-
-
 
     @PrePersist // Debe calcularse antes de guardar nueva Transaction
     @PreUpdate // Debe calcularse antes de guardar un update de Transaction

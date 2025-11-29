@@ -27,6 +27,8 @@ public class TransactionRequest {
     @NotNull(message = "Amount cannot be null")
     @Positive(message = "Amount must be positive")
     private Double amount;
+
+    private boolean system=false;
 }
 
 

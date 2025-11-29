@@ -1,19 +1,24 @@
 package com.familyfund.backend.services;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.familyfund.backend.dto.GoalRequest;
 import com.familyfund.backend.dto.GoalResponse;
 import com.familyfund.backend.modelo.Category;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.Goal;
+import com.familyfund.backend.modelo.Transaction;
+import com.familyfund.backend.modelo.TransactionType;
 import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
 import com.familyfund.backend.repositories.GoalRepository;
+import com.familyfund.backend.repositories.TransactionRepository;
 
 @Service
 public class GoalServiceImpl implements GoalService {
@@ -28,7 +33,10 @@ public class GoalServiceImpl implements GoalService {
     FamilyRepository familyRepository;
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    CategoryRepository categoryRepository;
+
+    @Autowired
+    TransactionRepository transactionRepository;
 
     // Obtener todos los objetivos de una familia
     public List<Goal> getAllGoalsByFamily(Long familyId) {
@@ -131,11 +139,38 @@ public class GoalServiceImpl implements GoalService {
 
     // ---- VERIFICAR OBJETIVOS CUMPLIDOS ----//
 
-    // Evaluar un goal concreto en su mes
+    // Crear un transaction de Sistema para restar el objetivo cumplido
+    @Transactional
+    public Transaction createSystemGoalTransaction(Goal goal) {
+
+        Category category = goal.getCategory();
+
+        Transaction t = new Transaction();
+        t.setName("Auto: objetivo cumplido");
+        t.setType(TransactionType.EXPENSE);
+        t.setDate(LocalDate.now());
+        t.setAmount(goal.getAmount());
+        t.setCategory(category);
+        t.setUsuario(null);
+        t.setSystem(true);
+
+        return transactionRepository.save(t);
+    }
+
+    // Evaluar un goal concreto en su mes y crear transaction(gasto) en la categoría
+    @Transactional
     public void evaluateGoal(Goal goal) {
-        String month = goal.getMonth(); // formato YYYY-MM de su propio mes
+        String month = goal.getMonth();
         double spent = categoryService.getTotalSpentInMonth(goal.getCategory().getId(), month);
-        goal.setAchieved((goal.getCategory().getLimit() - spent) >= goal.getAmount());
+
+        boolean achieved = (goal.getCategory().getLimit() - spent) >= goal.getAmount();
+
+        goal.setAchieved(achieved);
+        goalRepository.save(goal);
+
+        if (achieved) {
+            createSystemGoalTransaction(goal);
+        }
     }
 
     // Evaluar todos los goals de una familia en un mes concreto

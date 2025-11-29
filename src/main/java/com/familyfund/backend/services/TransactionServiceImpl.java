@@ -50,6 +50,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setAmount(request.getAmount());
         transaction.setUsuario(usuario);
         transaction.setCategory(category);
+        transaction.isSystem();
 
         transaction = transactionRepository.save(transaction);
 
@@ -61,7 +62,8 @@ public class TransactionServiceImpl implements TransactionService {
                 transaction.getDate(),
                 transaction.getAmount(),
                 category.getId(),
-                transaction.getUsuario());
+                transaction.getUsuario(),
+                transaction.isSystem());
     }
 
     // GUARDAR TRANSACTION
@@ -109,7 +111,8 @@ public class TransactionServiceImpl implements TransactionService {
                 saved.getDate(),
                 saved.getAmount(),
                 saved.getCategory().getId(),
-                saved.getUsuario());
+                saved.getUsuario(),
+                saved.isSystem());
     }
 
     // ELIMINAR TRANSACTION

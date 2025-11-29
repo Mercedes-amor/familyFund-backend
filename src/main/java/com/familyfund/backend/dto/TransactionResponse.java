@@ -11,6 +11,7 @@ public record TransactionResponse(
     LocalDate date,
     Double amount,
     Long categoryId,
-    Usuario user
+    Usuario user,
+    boolean system
 ) {}
 
