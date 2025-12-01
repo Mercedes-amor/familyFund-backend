@@ -35,6 +35,7 @@ public class Goal {
     @Positive(message = "Amount must be positive")
     private Double amount;
 
+    private boolean evaluated; //si se ha evaluado
     private Boolean achieved; // si se ha logrado el objetivo
     private String month; // mes objetivo en formato YYYY-MM
 

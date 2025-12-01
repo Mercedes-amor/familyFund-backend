@@ -15,6 +15,7 @@ import com.familyfund.backend.dto.UpdateMaxiGoalRequest;
 import com.familyfund.backend.modelo.Family;
 import com.familyfund.backend.modelo.MaxiGoal;
 import com.familyfund.backend.modelo.MaxiGoalSaving;
+import com.familyfund.backend.modelo.TransactionType;
 import com.familyfund.backend.modelo.Usuario;
 import com.familyfund.backend.repositories.CategoryRepository;
 import com.familyfund.backend.repositories.FamilyRepository;
@@ -144,7 +145,7 @@ public class MaxiGoalServiceImpl implements MaxiGoalService {
         return maxiGoalSavingRepository.findByMaxiGoalId(id);
     }
 
-      // OBTENER TODOS LOS SAVINGS DE UNA FAMILIA
+    // OBTENER TODOS LOS SAVINGS DE UNA FAMILIA
     public List<MaxiGoalSaving> getAllSavingsbyFamily(Long familyId) {
         return maxiGoalSavingRepository.findAllByFamilyIdOrderByCreatedAtDesc(familyId);
     }
@@ -209,6 +210,8 @@ public class MaxiGoalServiceImpl implements MaxiGoalService {
     @Transactional
     public void addRemainingToMaxiGoal() {
         LocalDate today = LocalDate.now();
+        // Fecha "hoy" simulando el mes pasado
+        // LocalDate today = LocalDate.now().minusMonths(1);
         YearMonth currentMonth = YearMonth.from(today);
         LocalDate lastDayOfMonth = currentMonth.atEndOfMonth();
 
@@ -224,9 +227,9 @@ public class MaxiGoalServiceImpl implements MaxiGoalService {
 
             // Calcular ingresos y gastos del mes
             Double totalIngresos = categoryRepository.sumTransactionsByFamilyAndTypeAndMonth(
-                    familyId, "INCOME", currentMonth.getYear(), currentMonth.getMonthValue());
+                    familyId, TransactionType.INCOME, currentMonth.getYear(), currentMonth.getMonthValue());
             Double totalGastos = categoryRepository.sumTransactionsByFamilyAndTypeAndMonth(
-                    familyId, "EXPENSE", currentMonth.getYear(), currentMonth.getMonthValue());
+                    familyId, TransactionType.EXPENSE, currentMonth.getYear(), currentMonth.getMonthValue());
 
             // Evitar null
             totalIngresos = totalIngresos != null ? totalIngresos : 0.0;

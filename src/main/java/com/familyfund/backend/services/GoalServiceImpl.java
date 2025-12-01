@@ -146,7 +146,7 @@ public class GoalServiceImpl implements GoalService {
         Category category = goal.getCategory();
 
         Transaction t = new Transaction();
-        t.setName("Auto: objetivo cumplido");
+        t.setName("Objetivo: " + goal.getName());
         t.setType(TransactionType.EXPENSE);
         t.setDate(LocalDate.now());
         t.setAmount(goal.getAmount());
@@ -191,8 +191,11 @@ public class GoalServiceImpl implements GoalService {
         List<Goal> allGoals = goalRepository.findAll();
 
         for (Goal g : allGoals) {
-            evaluateGoal(g);
-            goalRepository.save(g);
+            if (!g.isEvaluated()) {
+                evaluateGoal(g);
+                g.setEvaluated(true);
+                goalRepository.save(g);
+            }
         }
     }
 
