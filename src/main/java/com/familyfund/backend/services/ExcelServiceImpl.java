@@ -108,7 +108,11 @@ public class ExcelServiceImpl implements ExcelService {
             row.createCell(1).setCellValue(t.getId());
             row.createCell(2).setCellValue(t.getDate().toString());
             row.createCell(3).setCellValue(t.getAmount());
-            row.createCell(4).setCellValue(t.getUsuario().getNombre());
+
+            // Usuario null-safe
+            String usuarioNombre = t.getUsuario() != null ? t.getUsuario().getNombre() : "Sistema";
+            row.createCell(4).setCellValue(usuarioNombre);
+
         }
 
         // Ajustar ancho de columnas de Transactions
