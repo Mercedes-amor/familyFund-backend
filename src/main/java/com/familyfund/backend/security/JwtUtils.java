@@ -20,7 +20,7 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtils {
   private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
   private String jwtSecret = "abc123==abc123==abc123==abc123==abc123==abc123==abc123==abc123==abc123==abc123==abc123==abc123==";
-  private int jwtExpirationMs = 86400000;
+  private int jwtExpirationMs = 86400000; //24h
 
   public String generateJwtToken(Authentication authentication) {
 

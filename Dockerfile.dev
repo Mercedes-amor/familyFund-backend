@@ -1,0 +1,20 @@
+# Dockerfile.dev (backend)
+FROM eclipse-temurin:19-jdk
+
+WORKDIR /app
+
+# Copiar solo los archivos necesarios de Maven
+COPY pom.xml mvnw ./
+COPY .mvn .mvn
+
+# Descargar dependencias sin compilar todo
+RUN ./mvnw dependency:go-offline
+
+# Copiar el código fuente
+COPY src ./src
+
+# Exponer el puerto
+EXPOSE 8080
+
+# Ejecutar la aplicación con hot reload
+CMD ["./mvnw", "spring-boot:run"]
